@@ -1,0 +1,28 @@
+{
+  "name": "nest-prisma_doc-gen",
+  "version": "1.0.0",
+  "description": "Auto generates ApiProperties from schema.prisma",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aleleppy/nest-prisma-doc-gen.git"
+  },
+  "keywords": [
+    "scalar",
+    "prisma",
+    "nestJS",
+    "documentation",
+    "swagger",
+    "automatic",
+    "generation"
+  ],
+  "author": "Alessandro Lepore",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aleleppy/nest-prisma-doc-gen/issues"
+  },
+  "homepage": "https://github.com/aleleppy/nest-prisma-doc-gen#readme"
+}
