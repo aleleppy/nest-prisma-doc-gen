@@ -29,8 +29,10 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/internals": "^6.17.1",
+    "nest-prisma_doc-gen": "^1.0.1",
     "prettier": "^3.6.2",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.1"
   },
   "devDependencies": {
     "@types/node": "^24.7.2",

@@ -3,7 +3,7 @@ import * as path from "node:path";
 import * as prettier from "prettier";
 
 const ROOT = process.cwd();
-const OUT_DIR = path.join(ROOT, "generated/docgen");
+const OUT_DIR = path.join(ROOT, "src/types/docgen");
 
 export class DocGenFile {
   outDir: string;

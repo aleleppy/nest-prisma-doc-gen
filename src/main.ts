@@ -7,7 +7,6 @@ import { Helper } from "./helpers/helpers.js";
 import { Model } from "./types.js";
 
 import prismaPkg from "@prisma/internals";
-import { config } from "./helpers/loader.js";
 const { getDMMF } = prismaPkg;
 
 const ROOT = process.cwd();
