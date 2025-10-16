@@ -126,6 +126,8 @@ export class DocGenField {
       props.push(`example: ${this.scalarField.type}[0]`);
     } else if (this.scalarField.type === "Int") {
       props.push(`example: ${Static.getRandomNumber()}`);
+    } else if (this.scalarField.type === "String") {
+      props.push(`example: 'ordinary string'`);
     }
 
     props.push(`required: ${this.scalarField.isRequired}`);
