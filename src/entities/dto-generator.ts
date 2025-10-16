@@ -31,7 +31,7 @@ export class DocGenDto {
   build() {
     const sanitizedFields = this.fields
       .map((field) => {
-        field.validators.forEach((v) => this.classValidators.add(v));
+        field.validators.forEach((v) => this.classValidators.add(v.name));
 
         if (field.isEntity) {
           this.imports.add(`import { ${field.type} } from '../entities/${Helper.toKebab(field.scalarType)}.entity'`);

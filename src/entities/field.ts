@@ -2,6 +2,7 @@ import { Helper } from "../helpers/helpers.js";
 import { config } from "../helpers/loader.js";
 import { Static } from "../static.js";
 import { FieldDefault, Scalar, FieldKind, FieldType, Field } from "../types.js";
+import { Validator } from "./validator.js";
 
 const helpers = new Helper();
 const rules = config;
@@ -20,7 +21,7 @@ export class DocGenField {
   isEntity: boolean = false;
   isUpdatedAt: boolean = false;
   isRequired: boolean;
-  validators = new Set<string>();
+  validators = new Set<Validator>();
 
   readonly scalarField: Field;
 
@@ -36,35 +37,56 @@ export class DocGenField {
     this.isUpdatedAt = isUpdatedAt;
     this.fieldType = fieldType;
 
-    this.init();
-  }
-
-  private async init() {
-    const validator = Helper.validatorForScalar(this.scalarType);
-    if (validator !== "") this.validators.add(validator);
-
     this.setType();
     this.setValidators();
   }
 
+  private processValidator(name: string) {
+    const validator = new Validator({ name });
+    if (this.isList) validator.content = "{ each: true }";
+
+    this.validators.add(validator);
+  }
+
   private setValidators() {
-    if (this.scalarType === "String" && this.isRequired) {
-      this.validators.add("IsNotEmpty");
+    if (this.scalarType === "String" || this.scalarType === "DateTime" || this.scalarType === "Json") {
+      this.processValidator("IsString");
+
+      if (this.isRequired) {
+        this.processValidator("IsNotEmpty");
+      }
+    } else if (this.scalarType === "Boolean") {
+      this.processValidator("IsBoolean");
+    } else if (
+      this.scalarType === "Int" ||
+      this.scalarType === "BigInt" ||
+      this.scalarType === "Float" ||
+      this.scalarType === "Decimal"
+    ) {
+      this.processValidator("IsNumber");
     }
 
     if (this.isList) {
-      this.validators.add("IsArray");
+      const validator = new Validator({ name: "IsArray" });
+      this.validators.add(validator);
     }
 
-    if (!this.isRequired) {
-      this.validators.add("IsOptional");
+    if (!this.isRequired) this.processValidator("IsOptional");
+
+    if (this.isEnum) {
+      this.validators.add(
+        new Validator({
+          name: "IsEnum",
+          content: this.type,
+        })
+      );
     }
 
     const findedDecorators = rules.validators.get(this.name);
 
     if (findedDecorators) {
-      findedDecorators.forEach((decorator) => {
-        this.validators.add(decorator);
+      findedDecorators.forEach((name) => {
+        this.processValidator(name);
       });
     }
   }
@@ -112,12 +134,8 @@ export class DocGenField {
 
   private sanitizeValidators() {
     const sanitizedValidators = Array.from(this.validators).map((validator) => {
-      return `@${validator}()`;
+      return validator.build();
     });
-
-    if (this.isEnum) {
-      sanitizedValidators.push(`@IsEnum(${this.type})`);
-    }
 
     return sanitizedValidators;
   }
@@ -128,7 +146,7 @@ export class DocGenField {
     const apiType = () => {
       if (this.type === "Date") return `'string'`;
 
-      if (this.isList) {
+      if (this.isList && this.isEntity) {
         return `[${this.type}]`;
       } else if (this.isEnum) {
         return this.type;
