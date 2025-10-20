@@ -1,7 +1,7 @@
-import { Helper } from "../helpers/helpers.js";
-import { config } from "../helpers/loader.js";
-import { Static } from "../static.js";
-import { FieldDefault, Scalar, FieldKind, FieldType, Field } from "../types.js";
+import { FieldType } from "../config.type.js";
+import { Helper } from "../utils/helpers.js";
+import { config } from "../utils/loader.js";
+import { FieldDefault, Scalar, FieldKind, Field } from "../types.js";
 import { Validator } from "./validator.js";
 
 const helpers = new Helper();
@@ -85,9 +85,9 @@ export class DocGenField {
     const findedDecorators = rules.validators.get(this.name);
 
     if (findedDecorators) {
-      findedDecorators.forEach((name) => {
+      for (const name of findedDecorators) {
         this.processValidator(name);
-      });
+      }
     }
   }
 
@@ -125,7 +125,7 @@ export class DocGenField {
     } else if (this.scalarField.kind === "enum") {
       props.push(`example: ${this.scalarField.type}[0]`);
     } else if (this.scalarField.type === "Int") {
-      props.push(`example: ${Static.getRandomNumber()}`);
+      props.push(`example: 777`);
     } else if (this.scalarField.type === "String") {
       props.push(`example: 'ordinary string'`);
     }

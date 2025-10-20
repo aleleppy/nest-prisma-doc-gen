@@ -1,5 +1,5 @@
 import { DocGenFile } from "../file.js";
-import { Helper } from "../helpers/helpers.js";
+import { Helper } from "../utils/helpers.js";
 import { Static } from "../static.js";
 import { Model } from "../types.js";
 import { DocGenField } from "./field.js";
@@ -14,11 +14,11 @@ export class DocGenEntity {
   constructor(model: Model) {
     this.name = model.name;
 
-    model.fields.forEach((field) => {
-      if (field.kind === "object") return;
+    for (const field of model.fields) {
+      if (field.kind === "object") continue;
 
       this.fields.push(new DocGenField(field, "entity"));
-    });
+    }
 
     this.file = new DocGenFile({
       dir: "/entity",

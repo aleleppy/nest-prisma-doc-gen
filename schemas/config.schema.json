@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/Rules",
+  "definitions": {
+    "ApiExampleBuilder": {
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Define um exemplo usado para popular campos de DTO durante a geração automática.",
+      "properties": {
+        "example": {
+          "type": ["string", "boolean", "number"],
+          "description": "Valor de exemplo a ser usado para os campos especificados."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Lista de nomes de campos onde o exemplo será aplicado."
+        }
+      },
+      "required": ["fields", "example"]
+    },
+
+    "ValidatorBuilder": {
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Define um validador a ser aplicado a determinados campos.",
+      "properties": {
+        "decorator": {
+          "type": "string",
+          "description": "Nome do decorator de validação (ex: IsEmail, IsStrongPassword)."
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Campos que recebem este validador."
+        }
+      },
+      "required": ["decorator", "fields"]
+    },
+
+    "Rules": {
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Configuração principal do DocGen.",
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "Caminho para o schema de validação (usado pelo editor para autocomplete)."
+        },
+        "ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Campos a serem ignorados durante a geração automática de DTOs."
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ApiExampleBuilder"
+          },
+          "description": "Lista de exemplos a serem aplicados a campos específicos."
+        },
+        "validators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ValidatorBuilder"
+          },
+          "description": "Lista de validadores associados a campos específicos."
+        }
+      },
+      "required": ["ignore", "examples", "validators"]
+    }
+  }
+}

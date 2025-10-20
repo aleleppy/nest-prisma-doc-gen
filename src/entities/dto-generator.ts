@@ -1,5 +1,5 @@
 import { DocGenFile } from "../file.js";
-import { Helper } from "../helpers/helpers.js";
+import { Helper } from "../utils/helpers.js";
 import { Static } from "../static.js";
 import { Model } from "../types.js";
 import { DocGenField } from "./field.js";
@@ -15,11 +15,11 @@ export class DocGenDto {
   constructor(model: Model) {
     this.name = model.name;
 
-    model.fields.forEach((field) => {
-      if (field.isUpdatedAt || field.isId || field.name === "createdAt" || field.kind === "object") return;
+    for (const field of model.fields) {
+      if (field.isUpdatedAt || field.isId || field.name === "createdAt" || field.kind === "object") continue;
 
       this.fields.push(new DocGenField(field, "dto"));
-    });
+    }
 
     this.file = new DocGenFile({
       dir: "/dto",
@@ -31,7 +31,9 @@ export class DocGenDto {
   build() {
     const sanitizedFields = this.fields
       .map((field) => {
-        field.validators.forEach((v) => this.classValidators.add(v.name));
+        for (const { name } of field.validators) {
+          this.classValidators.add(name);
+        }
 
         if (field.isEntity) {
           this.imports.add(`import { ${field.type} } from '../entities/${Helper.toKebab(field.scalarType)}.entity'`);

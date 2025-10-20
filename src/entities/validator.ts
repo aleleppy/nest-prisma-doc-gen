@@ -1,5 +1,3 @@
-import { Scalar } from "../types.js";
-
 export class Validator {
   name: string;
   content: string;

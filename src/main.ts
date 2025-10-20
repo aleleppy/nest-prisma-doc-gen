@@ -3,10 +3,11 @@ import * as path from "node:path";
 import { DocEnums, DocGenEnum, EnumValue } from "./entities/enum.js";
 import { DocGenModel } from "./entities/model.js";
 import { DocFields } from "./field.type.js";
-import { Helper } from "./helpers/helpers.js";
+import { Helper } from "./utils/helpers.js";
 import { Model } from "./types.js";
 
 import prismaPkg from "@prisma/internals";
+
 const { getDMMF } = prismaPkg;
 
 const ROOT = process.cwd();
@@ -35,9 +36,11 @@ export class DocGen {
 
     const fieldSet = new Set<string>();
 
-    datamodel.models.forEach((model) => {
-      model.fields.forEach((field) => fieldSet.add(`'${field.name}'`));
-    });
+    for (const model of datamodel.models) {
+      for (const field of model.fields) {
+        fieldSet.add(`'${field.name}'`);
+      }
+    }
 
     this.fields = new DocFields(Array.from(fieldSet).toString());
 
@@ -51,9 +54,9 @@ export class DocGen {
   build() {
     this.fields.file.save();
     this.enums.file.save();
-    this.models.forEach((model) => {
+    for (const model of this.models) {
       model.save();
-    });
+    }
   }
 }
 

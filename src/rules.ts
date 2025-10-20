@@ -1,4 +1,4 @@
-import { ApiExampleBuilder, ValidatorBuilder } from "./types.js";
+import { ApiExampleBuilder, ValidatorBuilder } from "./config.type.js";
 
 export class DocGenRules {
   ignore: string[];
@@ -24,7 +24,7 @@ export class DocGenRules {
     this.validators = new Map<string, string[]>(
       uniqueFieldsToValidate.map((field) => [
         field,
-        validators.filter((validator) => validator.fields.includes(field)).map((validator) => validator.decorator.name),
+        validators.filter((validator) => validator.fields.includes(field)).map((validator) => validator.decorator),
       ])
     );
   }

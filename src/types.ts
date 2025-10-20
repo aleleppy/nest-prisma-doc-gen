@@ -1,10 +1,9 @@
+import { ApiExampleBuilder, FieldType, ValidatorBuilder } from "./config.type.js";
+
 export type FieldKind = "scalar" | "object" | "enum";
 type FieldDefaultName = "now" | "autoincrement" | "cuid";
 
-export type FieldType = "entity" | "dto";
-
 export type DbName = string | null;
-
 export type Scalar = "String" | "Int" | "BigInt" | "Float" | "Decimal" | "Boolean" | "DateTime" | "Json" | "Bytes";
 
 export type Field = {
@@ -50,34 +49,6 @@ export type ModelUniqueIndexes = {
   fields: any[];
 };
 
-export class ValidatorBuilder {
-  decorator: ValidatorFactory | PropertyDecorator;
-  fields: string[];
-
-  constructor(decorator: PropertyDecorator, fields: string[]) {
-    this.decorator = decorator;
-    this.fields = fields;
-  }
-}
-
-export class ApiExampleBuilder {
-  fields: string[];
-  example: string | boolean | number;
-
-  constructor(fields: string[], example: string | boolean | number) {
-    this.fields = fields;
-    this.example = example;
-  }
-}
-
-export type Rules = {
-  ignore: string[];
-  examples: ApiExampleBuilder[];
-  validators: ValidatorBuilder[];
-};
-
-type ValidatorFactory = (...args: any[]) => PropertyDecorator;
-
 export type Model = {
   name: string;
   dbName: string | null;
@@ -93,6 +64,7 @@ export type Model = {
 };
 
 export type ModelParams = { model: Model; examples: Map<string, ApiExampleBuilder>; validators: Map<string, string[]> };
+
 export type FieldParams = {
   examples: Map<string, ApiExampleBuilder>;
   validators: Map<string, string[]>;
@@ -105,5 +77,3 @@ export type DocGenParams = {
   examples: ApiExampleBuilder[];
   validators: ValidatorBuilder[];
 };
-
-// field: Field, fieldType: FieldType

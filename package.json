@@ -6,8 +6,8 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "generate": "node dist/tools/generate-dtos.js"
+    "build": "tsc && npm run copy-schemas",
+    "copy-schemas": "node scripts/copy-schemas.js"
   },
   "repository": {
     "type": "git",
@@ -28,15 +28,19 @@
   "author": "Alessandro Lepore",
   "license": "ISC",
   "dependencies": {
+    "@esbuild/win32-x64": "^0.25.11",
     "@prisma/internals": "^6.17.1",
-    "nest-prisma_doc-gen": "^1.0.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "prettier": "^3.6.2",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.19.1"
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/node": "^24.7.2",
-    "tsx": "^4.20.6",
     "typescript": "^5.6.3"
-  }
+  },
+  "files": [
+    "dist",
+    "src/schemas/config.schema.json"
+  ]
 }
