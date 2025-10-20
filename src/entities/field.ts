@@ -106,7 +106,6 @@ export class DocGenField {
   private buildApiExample(): string[] {
     const fieldName = this.scalarField.name;
     const props: string[] = [];
-    const scalarDbName = this.scalarField.dbName ?? "genericDbName";
 
     if (this.isEntity) {
       if (this.isList) {
@@ -118,7 +117,7 @@ export class DocGenField {
       props.push(`example: '${rules.examples.get(fieldName)?.example}'`);
     } else if (helpers.isDate(this.scalarField)) {
       props.push(`example: '2025-09-03T03:00:00.000Z'`);
-    } else if (this.scalarField.isId || (this.scalarField.isReadOnly && scalarDbName.split("_").includes("id"))) {
+    } else if (this.scalarField.isId || Helper.splitByUpperCase(this.scalarField.name).includes("Id")) {
       props.push(`example: 'cmfxu4njg000008l52v7t8qze'`);
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);

@@ -146,6 +146,10 @@ export class Helper {
     } else return "any";
   }
 
+  static splitByUpperCase(str: string): string[] {
+    return str.split(/(?=[A-Z])/);
+  }
+
   isDate(field: Field): boolean {
     return field.kind === "scalar" && field.type === "DateTime";
   }
