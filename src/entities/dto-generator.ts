@@ -51,7 +51,7 @@ export class DocGenDto {
       this.imports.add(`import { ${Array.from(this.enums)} } from '../enums';`);
     }
 
-    this.imports.add(`import { ${Array.from(this.classValidators)} } from 'class-validator';`);
+    this.imports.add(`import { ${Array.from(this.classValidators)} } from 'src/utils/validators';`);
 
     return [
       `${Array.from(this.imports).join("\n")}`,
