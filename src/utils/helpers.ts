@@ -19,7 +19,7 @@ export class Helper {
       case "DateTime":
         return "Date";
       case "Json":
-        return "any";
+        return "object";
       case "Bytes":
         return "Buffer";
       default: {

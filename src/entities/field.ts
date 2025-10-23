@@ -129,7 +129,12 @@ export class DocGenField {
       props.push(`example: 'ordinary string'`);
     }
 
-    props.push(`required: ${this.scalarField.isRequired}`);
+    if (this.type === "object") {
+      props.push(`additionalProperties: true`);
+    } else {
+      props.push(`required: ${this.scalarField.isRequired}`);
+    }
+
     return props;
   }
 
