@@ -48,7 +48,7 @@ export class DocGenDto {
 
     if (this.enums.size > 0) {
       this.classValidators.add("IsEnum");
-      this.imports.add(`import { ${Array.from(this.enums)} } from '../enums';`);
+      this.imports.add(`import { ${Array.from(this.enums)} } from '@prisma/client';`);
     }
 
     this.imports.add(`import { ${Array.from(this.classValidators)} } from 'src/utils/validators';`);

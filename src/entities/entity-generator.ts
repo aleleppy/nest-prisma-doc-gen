@@ -42,7 +42,7 @@ export class DocGenEntity {
       .join("\n\n");
 
     if (this.enums.size > 0) {
-      this.imports.add(`import { ${Array.from(this.enums)} } from '../enums';`);
+      this.imports.add(`import { ${Array.from(this.enums)} } from '@prisma/client';`);
     }
 
     return [
