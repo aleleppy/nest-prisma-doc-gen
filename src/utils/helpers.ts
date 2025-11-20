@@ -94,44 +94,44 @@ export class Helper {
     };
   }
 
-  static async readPrismaFolderDatamodel(dir: string): Promise<string> {
-    const files: string[] = [];
-    const entries = await fs.readdir(dir, { withFileTypes: true });
+  // static async readPrismaFolderDatamodel(dir: string): Promise<string> {
+  //   const files: string[] = [];
+  //   const entries = await fs.readdir(dir, { withFileTypes: true });
 
-    const mainSchemaPath = path.join(dir, "schema.prisma");
-    try {
-      const mainStat = await fs.stat(mainSchemaPath);
-      if (mainStat.isFile()) files.push(mainSchemaPath);
-    } catch {}
+  //   const mainSchemaPath = path.join(dir, "schema.prisma");
+  //   try {
+  //     const mainStat = await fs.stat(mainSchemaPath);
+  //     if (mainStat.isFile()) files.push(mainSchemaPath);
+  //   } catch {}
 
-    // varrer demais itens (exceto migrations e o schema.prisma já incluído)
-    for (const entry of entries) {
-      if (entry.name === "migrations") continue;
-      const full = path.join(dir, entry.name);
+  //   // varrer demais itens (exceto migrations e o schema.prisma já incluído)
+  //   for (const entry of entries) {
+  //     if (entry.name === "migrations") continue;
+  //     const full = path.join(dir, entry.name);
 
-      if (entry.isDirectory()) {
-        const nested = await this.readPrismaFolderDatamodel(full);
-        if (nested.trim()) files.push(`\n// ---- ${full} ----\n${nested}`);
-      } else if (entry.isFile() && entry.name.endsWith(".prisma") && full !== mainSchemaPath) {
-        const content = await fs.readFile(full, "utf-8");
-        files.push(`\n// ---- ${full} ----\n${content}`);
-      }
-    }
+  //     if (entry.isDirectory()) {
+  //       const nested = await this.readPrismaFolderDatamodel(full);
+  //       if (nested.trim()) files.push(`\n// ---- ${full} ----\n${nested}`);
+  //     } else if (entry.isFile() && entry.name.endsWith(".prisma") && full !== mainSchemaPath) {
+  //       const content = await fs.readFile(full, "utf-8");
+  //       files.push(`\n// ---- ${full} ----\n${content}`);
+  //     }
+  //   }
 
-    // se não houver nada além de subpastas, retorna o que juntou nelas
-    if (!files.length) return "";
+  //   // se não houver nada além de subpastas, retorna o que juntou nelas
+  //   if (!files.length) return "";
 
-    // quando schema.prisma existe, ele já está no topo do array
-    if (files[0] === mainSchemaPath) {
-      const head = await fs.readFile(mainSchemaPath, "utf-8");
-      const tail = files.slice(1).join("\n");
-      return `${head}\n${tail}`;
-    }
+  //   // quando schema.prisma existe, ele já está no topo do array
+  //   if (files[0] === mainSchemaPath) {
+  //     const head = await fs.readFile(mainSchemaPath, "utf-8");
+  //     const tail = files.slice(1).join("\n");
+  //     return `${head}\n${tail}`;
+  //   }
 
-    // caso não exista schema.prisma, apenas concatena
-    const contents = await Promise.all(files.map(async (f) => (f.startsWith("\n// ---- ") ? f : fs.readFile(f, "utf-8"))));
-    return contents.join("\n");
-  }
+  //   // caso não exista schema.prisma, apenas concatena
+  //   const contents = await Promise.all(files.map(async (f) => (f.startsWith("\n// ---- ") ? f : fs.readFile(f, "utf-8"))));
+  //   return contents.join("\n");
+  // }
 
   findTypeForField(field: Field): string {
     if (field.kind === "scalar") {

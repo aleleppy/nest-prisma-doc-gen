@@ -7,11 +7,12 @@ import { Helper } from "./utils/helpers.js";
 import { Model } from "./types.js";
 
 import prismaPkg from "@prisma/internals";
+import { PrismaUtils } from "./utils/prisma-utils.js";
 
 const { getDMMF } = prismaPkg;
 
 const ROOT = process.cwd();
-const PRISMA_DIR = path.join(ROOT, "prisma");
+const PRISMA_DIR = path.join(ROOT, "src");
 
 export class DocGen {
   datamodel!: string;
@@ -21,7 +22,8 @@ export class DocGen {
   models!: DocGenModel[];
 
   async init() {
-    const prismaDataModel = await Helper.readPrismaFolderDatamodel(PRISMA_DIR);
+    const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
+
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
 
     this.enums = new DocEnums(
