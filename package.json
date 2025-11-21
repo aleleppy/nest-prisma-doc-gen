@@ -1,5 +1,5 @@
 {
-  "name": "nest-prisma_doc-gen",
+  "name": "doc-gen",
   "version": "1.0.10",
   "description": "Auto generates ApiProperties from schema.prisma",
   "main": "dist/index.js",
@@ -28,7 +28,7 @@
   "author": "Alessandro Lepore",
   "license": "ISC",
   "dependencies": {
-    "@prisma/internals": "^6.17.1",
+    "@prisma/internals": "^7.0.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "prettier": "^3.6.2",

@@ -3,7 +3,6 @@ import * as path from "node:path";
 import { DocEnums, DocGenEnum, EnumValue } from "./entities/enum.js";
 import { DocGenModel } from "./entities/model.js";
 import { DocFields } from "./field.type.js";
-import { Helper } from "./utils/helpers.js";
 import { Model } from "./types.js";
 
 import prismaPkg from "@prisma/internals";
@@ -23,7 +22,6 @@ export class DocGen {
 
   async init() {
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
-
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
 
     this.enums = new DocEnums(
@@ -55,7 +53,7 @@ export class DocGen {
 
   build() {
     this.fields.file.save();
-    this.enums.file.save();
+    // this.enums.file.save();
     for (const model of this.models) {
       model.save();
     }
