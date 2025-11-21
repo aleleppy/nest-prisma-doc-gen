@@ -1,5 +1,5 @@
 {
-  "name": "doc-gen",
+  "name": "nest-prisma_doc-gen",
   "version": "1.0.11",
   "description": "Auto generates ApiProperties from schema.prisma",
   "main": "dist/index.js",
