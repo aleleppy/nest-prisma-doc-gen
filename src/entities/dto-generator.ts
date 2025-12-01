@@ -51,7 +51,7 @@ export class DocGenDto {
       this.imports.add(`import { ${Array.from(this.enums)} } from '@prisma/client';`);
     }
 
-    this.imports.add(`import { ${Array.from(this.classValidators)} } from 'src/utils/validators';`);
+    this.imports.add(`import { ${Array.from(this.classValidators)} } from 'src/_core/validators';`);
 
     return [
       `${Array.from(this.imports).join("\n")}`,

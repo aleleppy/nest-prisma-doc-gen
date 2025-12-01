@@ -122,7 +122,7 @@ export class DocGenField {
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);
     } else if (this.scalarField.kind === "enum") {
-      props.push(`example: ${this.scalarField.type}[0]`);
+      props.push(`example: Object.values(${this.scalarField.type})[0]`);
     } else if (this.scalarField.type === "Int") {
       props.push(`example: 777`);
     } else if (this.scalarField.type === "String") {
@@ -170,7 +170,7 @@ export class DocGenField {
         return this.type;
       }
     };
-    const optionalFlag = this.isRequired ? "" : "?";
+    const optionalFlag = this.isRequired ? "!" : "?";
 
     const validators = this.sanitizeValidators();
     const apiExample = this.buildApiExample().join(", ");

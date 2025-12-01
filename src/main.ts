@@ -53,7 +53,6 @@ export class DocGen {
 
   build() {
     this.fields.file.save();
-    // this.enums.file.save();
     for (const model of this.models) {
       model.save();
     }
