@@ -1,4 +1,4 @@
-export type FieldType = "entity" | "dto";
+export type FieldType = "res" | "dto";
 type ExampleType = string | boolean | number;
 
 export class ValidatorBuilder {

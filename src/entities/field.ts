@@ -9,7 +9,7 @@ const rules = config;
 
 export class DocGenField {
   name: string;
-  isList: boolean;
+  isArray: boolean;
   default?: FieldDefault | string;
   scalarType: Scalar;
   kind: FieldKind;
@@ -18,7 +18,7 @@ export class DocGenField {
   fieldType: FieldType;
 
   isEnum: boolean = false;
-  isEntity: boolean = false;
+  isResponse: boolean = false;
   isUpdatedAt: boolean = false;
   isRequired: boolean;
   validators = new Set<Validator>();
@@ -29,7 +29,7 @@ export class DocGenField {
     const { name, isList, type, kind, isRequired, isUpdatedAt } = field;
 
     this.name = name;
-    this.isList = isList;
+    this.isArray = isList;
     this.scalarType = type;
     this.kind = kind;
     this.isRequired = isRequired;
@@ -43,7 +43,7 @@ export class DocGenField {
 
   private processValidator(name: string) {
     const validator = new Validator({ name });
-    if (this.isList) validator.content = "{ each: true }";
+    if (this.isArray) validator.content = "{ each: true }";
 
     this.validators.add(validator);
   }
@@ -66,7 +66,7 @@ export class DocGenField {
       this.processValidator("IsNumber");
     }
 
-    if (this.isList) {
+    if (this.isArray) {
       const validator = new Validator({ name: "IsArray" });
       this.validators.add(validator);
     }
@@ -74,10 +74,12 @@ export class DocGenField {
     if (!this.isRequired) this.processValidator("IsOptional");
 
     if (this.isEnum) {
+      const content = this.isArray ? `${this.type}, { each: true } ` : this.type;
+
       this.validators.add(
         new Validator({
           name: "IsEnum",
-          content: this.type,
+          content,
         })
       );
     }
@@ -96,8 +98,8 @@ export class DocGenField {
       this.isEnum = true;
       this.type = this.scalarType;
     } else if (this.kind === "object") {
-      this.isEntity = true;
-      this.type = `${this.scalarType}Entity`;
+      this.isResponse = true;
+      this.type = `${this.scalarType}Res`;
     } else if (this.kind === "scalar") {
       this.type = Helper.prismaScalarToTs(this.scalarType);
     }
@@ -107,8 +109,8 @@ export class DocGenField {
     const fieldName = this.scalarField.name;
     const props: string[] = [];
 
-    if (this.isEntity) {
-      if (this.isList) {
+    if (this.isResponse) {
+      if (this.isArray) {
         props.push(`example: [generateExample(${this.type})]`);
       } else {
         props.push(`example: generateExample(${this.type})`);
@@ -122,7 +124,9 @@ export class DocGenField {
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);
     } else if (this.scalarField.kind === "enum") {
-      props.push(`example: Object.values(${this.scalarField.type})[0]`);
+      const example = [`example: Object.values(${this.scalarField.type})`];
+      this.isArray ?? example.push("[0]");
+      props.push(example.join());
     } else if (this.scalarField.type === "Int") {
       props.push(`example: 777`);
     } else if (this.scalarField.type === "String") {
@@ -152,11 +156,11 @@ export class DocGenField {
     const apiType = () => {
       if (this.type === "Date") return `'string'`;
 
-      if (this.isList && this.isEntity) {
+      if (this.isArray && this.isResponse) {
         return `[${this.type}]`;
       } else if (this.isEnum) {
-        return this.type;
-      } else if (this.isEntity) {
+        return `${this.type}`;
+      } else if (this.isResponse) {
         return `() => ${this.type}`;
       }
 
@@ -164,7 +168,7 @@ export class DocGenField {
     };
 
     const fieldType = () => {
-      if (this.isList) {
+      if (this.isArray) {
         return `${this.type}[]`;
       } else {
         return this.type;
@@ -176,7 +180,7 @@ export class DocGenField {
     const apiExample = this.buildApiExample().join(", ");
 
     return {
-      apiProperty: `@ApiProperty({ ${key}: ${apiType()}, ${apiExample} })`,
+      apiProperty: `@ApiProperty({ ${key}: ${apiType()}, ${apiExample}, ${this.isArray ? "isArray: true" : ""} })`,
       validators,
       atributes: `${this.name}${optionalFlag}: ${fieldType()};`,
     };

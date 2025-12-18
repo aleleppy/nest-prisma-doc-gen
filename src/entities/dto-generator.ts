@@ -8,7 +8,11 @@ export class DocGenDto {
   name: string;
   file: DocGenFile;
   fields: DocGenField[] = [];
-  imports = new Set([`${Static.AUTO_GENERATED_COMMENT}`, `import { ApiProperty } from '@nestjs/swagger'`]);
+  imports = new Set([
+    `${Static.AUTO_GENERATED_COMMENT}`,
+    `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`,
+    `import { DefaultIdDto } from '../generic.dto'`,
+  ]);
   classValidators = new Set<string>();
   enums = new Set<string>();
 
@@ -35,8 +39,8 @@ export class DocGenDto {
           this.classValidators.add(name);
         }
 
-        if (field.isEntity) {
-          this.imports.add(`import { ${field.type} } from '../entities/${Helper.toKebab(field.scalarType)}.entity'`);
+        if (field.isResponse) {
+          this.imports.add(`import { ${field.type} } from '../entities/${Helper.toKebab(field.scalarType)}.response'`);
           this.imports.add(`import { generateExample } from 'src/utils/functions/reflect'`);
         } else if (field.isEnum) {
           this.enums.add(field.type);
@@ -58,6 +62,10 @@ export class DocGenDto {
       `export class ${this.name}Dto {
         ${sanitizedFields}
       }`,
+      `export class ${this.name}WithIdDto extends IntersectionType(
+        ${this.name}Dto,
+        DefaultIdDto,
+      ) {}`,
     ].join("\n\n");
   }
 }

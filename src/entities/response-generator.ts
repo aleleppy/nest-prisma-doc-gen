@@ -4,7 +4,7 @@ import { Static } from "../static.js";
 import { Model } from "../types.js";
 import { DocGenField } from "./field.js";
 
-export class DocGenEntity {
+export class DocGenResponse {
   name: string;
   file: DocGenFile;
   fields: DocGenField[] = [];
@@ -17,12 +17,12 @@ export class DocGenEntity {
     for (const field of model.fields) {
       if (field.kind === "object") continue;
 
-      this.fields.push(new DocGenField(field, "entity"));
+      this.fields.push(new DocGenField(field, "res"));
     }
 
     this.file = new DocGenFile({
-      dir: "/entity",
-      fileName: `${Helper.toKebab(this.name)}.entity.ts`,
+      dir: "/res",
+      fileName: `${Helper.toKebab(this.name)}.res.ts`,
       data: this.build(),
     });
   }
@@ -30,8 +30,8 @@ export class DocGenEntity {
   build() {
     const sanitizedFields = this.fields
       .map((field) => {
-        if (field.isEntity) {
-          this.imports.add(`import { ${field.type} } from './${Helper.toKebab(field.scalarType)}.entity'`);
+        if (field.isResponse) {
+          this.imports.add(`import { ${field.type} } from './${Helper.toKebab(field.scalarType)}.res'`);
           this.imports.add(`import { generateExample } from 'src/utils/functions/reflect'`);
         } else if (field.isEnum) {
           this.enums.add(field.type);
@@ -47,7 +47,7 @@ export class DocGenEntity {
 
     return [
       `${Array.from(this.imports).join("\n")}`,
-      `export class ${this.name}Entity {
+      `export class ${this.name}Res {
         ${sanitizedFields}
       }`,
     ].join("\n\n");
