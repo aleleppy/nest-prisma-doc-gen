@@ -10,7 +10,7 @@ export class DocGenGeneric {
     `;
 
     const validatorProps = `
-      export class DefaultIdDto {
+      export class DefaultIdDtoDG {
         @ApiProperty({ type: 'string', example: 'cmfxu4njg000008l52v7t8qze', required: true })
         @IsString()
         @IsNotEmpty()

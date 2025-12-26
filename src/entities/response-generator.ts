@@ -47,7 +47,7 @@ export class DocGenResponse {
 
     return [
       `${Array.from(this.imports).join("\n")}`,
-      `export class ${this.name}Res {
+      `export class ${this.name}ResDG {
         ${sanitizedFields}
       }`,
     ].join("\n\n");

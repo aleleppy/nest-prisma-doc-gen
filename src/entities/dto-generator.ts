@@ -11,7 +11,7 @@ export class DocGenDto {
   imports = new Set([
     `${Static.AUTO_GENERATED_COMMENT}`,
     `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`,
-    `import { DefaultIdDto } from '../generic.dto'`,
+    `import { DefaultIdDtoDG } from '../generic.dto'`,
   ]);
   classValidators = new Set<string>();
   enums = new Set<string>();
@@ -59,12 +59,12 @@ export class DocGenDto {
 
     return [
       `${Array.from(this.imports).join("\n")}`,
-      `export class ${this.name}Dto {
+      `export class ${this.name}DtoDG {
         ${sanitizedFields}
       }`,
-      `export class ${this.name}WithIdDto extends IntersectionType(
-        ${this.name}Dto,
-        DefaultIdDto,
+      `export class ${this.name}WithIdDtoDG extends IntersectionType(
+        ${this.name}DtoDG,
+        DefaultIdDtoDG,
       ) {}`,
     ].join("\n\n");
   }
