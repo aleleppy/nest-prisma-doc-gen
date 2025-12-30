@@ -124,10 +124,7 @@ export class DocGenField {
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);
     } else if (this.scalarField.kind === "enum") {
-      const example = [`example: Object.values(${this.scalarField.type})`];
-      if (!this.isArray) {
-        example.push("[0]");
-      }
+      const example = [`example: Object.values(${this.scalarField.type}) ${this.isArray ? "" : "[0]"}`];
       props.push(example.join());
     } else if (this.scalarField.type === "Int") {
       props.push(`example: 777`);
