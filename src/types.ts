@@ -76,4 +76,5 @@ export type DocGenParams = {
   ignore: string[];
   examples: ApiExampleBuilder[];
   validators: ValidatorBuilder[];
+  validatorPath: string;
 };

@@ -4,11 +4,18 @@ export class DocGenRules {
   ignore: string[];
   examples: Map<string, ApiExampleBuilder>;
   validators: Map<string, string[]>;
+  validatorPath: string;
 
-  constructor(params: { ignore: string[]; examples: ApiExampleBuilder[]; validators: ValidatorBuilder[] }) {
-    const { examples, ignore, validators } = params;
+  constructor(params: {
+    ignore: string[];
+    examples: ApiExampleBuilder[];
+    validators: ValidatorBuilder[];
+    validatorPath: string;
+  }) {
+    const { examples, ignore, validators, validatorPath } = params;
 
     this.ignore = ignore;
+    this.validatorPath = validatorPath;
 
     if (!validators.length) {
       console.warn("[doc-gen] Nenhum validator encontrado. Verifique seu docgen.config.ts*");

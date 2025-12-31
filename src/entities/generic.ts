@@ -1,4 +1,5 @@
 import { DocGenFile } from "../file.js";
+import { config } from "../utils/loader.js";
 
 export class DocGenGeneric {
   file: DocGenFile;
@@ -6,7 +7,7 @@ export class DocGenGeneric {
   constructor() {
     const imports = `
       import { ApiProperty } from '@nestjs/swagger';
-      import { IsString, IsNotEmpty } from 'src/_core/validators';
+      import { IsString, IsNotEmpty } from '${config.validatorPath}';
     `;
 
     const validatorProps = `

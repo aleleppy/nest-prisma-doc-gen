@@ -13,13 +13,16 @@
         },
         "fields": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "description": "Lista de nomes de campos onde o exemplo será aplicado."
         }
       },
       "required": ["fields", "example"]
+    },
+
+    "ValidatorPath": {
+      "type": "string",
+      "description": "Caminho (path) para o arquivo/pasta de validators usado pelo gerador."
     },
 
     "ValidatorBuilder": {
@@ -33,9 +36,7 @@
         },
         "fields": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "description": "Campos que recebem este validador."
         }
       },
@@ -53,27 +54,24 @@
         },
         "ignore": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "description": "Campos a serem ignorados durante a geração automática de DTOs."
+        },
+        "validatorPath": {
+          "$ref": "#/definitions/ValidatorPath"
         },
         "examples": {
           "type": "array",
-          "items": {
-            "$ref": "#/definitions/ApiExampleBuilder"
-          },
+          "items": { "$ref": "#/definitions/ApiExampleBuilder" },
           "description": "Lista de exemplos a serem aplicados a campos específicos."
         },
         "validators": {
           "type": "array",
-          "items": {
-            "$ref": "#/definitions/ValidatorBuilder"
-          },
+          "items": { "$ref": "#/definitions/ValidatorBuilder" },
           "description": "Lista de validadores associados a campos específicos."
         }
       },
-      "required": ["ignore", "examples", "validators"]
+      "required": ["ignore", "validatorPath", "examples", "validators"]
     }
   }
 }

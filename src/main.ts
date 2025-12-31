@@ -26,16 +26,6 @@ export class DocGen {
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
 
-    // this.enums = new DocEnums(
-    //   datamodel.enums.map(({ dbName, name, values }) => {
-    //     return new DocGenEnum({
-    //       dbName: dbName ?? "",
-    //       name,
-    //       values: values as EnumValue[],
-    //     });
-    //   })
-    // );
-
     const fieldSet = new Set<string>();
 
     for (const model of datamodel.models) {

@@ -19,12 +19,14 @@ export class DocGenConfig {
   public readonly ignore: string[];
   public readonly examples: Map<string, ApiExampleBuilder>;
   public readonly validators: Map<string, string[]>;
+  public readonly validatorPath: string;
 
   constructor(configs: DocGenRules) {
-    const { examples, ignore, validators } = configs;
+    const { examples, ignore, validators, validatorPath } = configs;
     this.ignore = ignore;
     this.examples = examples;
     this.validators = validators;
+    this.validatorPath = validatorPath;
   }
 
   private static async readJson(filePath: string) {

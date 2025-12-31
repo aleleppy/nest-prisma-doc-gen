@@ -3,6 +3,7 @@ import { Helper } from "../utils/helpers.js";
 import { Static } from "../static.js";
 import { Model } from "../types.js";
 import { DocGenField } from "./field.js";
+import { config } from "../utils/loader.js";
 
 export class DocGenDto {
   name: string;
@@ -55,7 +56,7 @@ export class DocGenDto {
       this.imports.add(`import { ${Array.from(this.enums)} } from '@prisma/client';`);
     }
 
-    this.imports.add(`import { ${Array.from(this.classValidators)} } from 'src/_core/validators';`);
+    this.imports.add(`import { ${Array.from(this.classValidators)} } from '${config.validatorPath}';`);
 
     return [
       `${Array.from(this.imports).join("\n")}`,
