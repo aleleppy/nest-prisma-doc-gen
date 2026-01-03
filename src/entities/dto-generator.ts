@@ -1,4 +1,3 @@
-import { DocGenFile } from "../file.js";
 import { Helper } from "../utils/helpers.js";
 import { Static } from "../static.js";
 import { Model } from "../types.js";
@@ -7,30 +6,23 @@ import { config } from "../utils/loader.js";
 
 export class DocGenDto {
   name: string;
-  file: DocGenFile;
+  // file: DocGenFile;
   fields: DocGenField[] = [];
-  imports = new Set([
-    `${Static.AUTO_GENERATED_COMMENT}`,
-    `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`,
-    `import { DefaultIdDtoDG } from '../generic.dto'`,
-  ]);
+  imports = new Set([`${Static.AUTO_GENERATED_COMMENT}`, `import { ApiProperty } from '@nestjs/swagger'`]);
   classValidators = new Set<string>();
   enums = new Set<string>();
 
   constructor(model: Model) {
     this.name = model.name;
 
+    this.classValidators.add("IsString");
+    this.classValidators.add("IsNotEmpty");
+
     for (const field of model.fields) {
       if (field.isUpdatedAt || field.isId || field.name === "createdAt" || field.kind === "object") continue;
 
       this.fields.push(new DocGenField(field, "dto"));
     }
-
-    this.file = new DocGenFile({
-      dir: "/dto",
-      fileName: `${Helper.toKebab(this.name)}.dto.ts`,
-      data: this.build(),
-    });
   }
 
   build() {
@@ -60,13 +52,16 @@ export class DocGenDto {
 
     return [
       `${Array.from(this.imports).join("\n")}`,
-      `export class ${this.name}DtoDG {
+      `class ${this.name}Dto {
         ${sanitizedFields}
       }`,
-      `export class ${this.name}WithIdDtoDG extends IntersectionType(
-        ${this.name}DtoDG,
-        DefaultIdDtoDG,
-      ) {}`,
+      `class ${this.name}Id {
+        @ApiProperty({ type: 'string', example: 'cmfxu4njg000008l52v7t8qze', required: true })
+        @IsString()
+        @IsNotEmpty()
+        ${this.name.toLocaleLowerCase()}Id!: string;
+      }
+      `,
     ].join("\n\n");
   }
 }

@@ -99,7 +99,7 @@ export class DocGenField {
       this.type = this.scalarType;
     } else if (this.kind === "object") {
       this.isResponse = true;
-      this.type = `${this.scalarType}ResDG`;
+      this.type = `${this.scalarType}Res`;
     } else if (this.kind === "scalar") {
       this.type = Helper.prismaScalarToTs(this.scalarType);
     }

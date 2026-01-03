@@ -1,5 +1,3 @@
-import { promises as fs } from "node:fs";
-import * as path from "node:path";
 import { Scalar, Field, DocGenModel } from "../types.js";
 
 export class Helper {
@@ -80,7 +78,7 @@ export class Helper {
   }
 
   static toKebab(s: string): string {
-    return s.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+    return s.replaceAll(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
   }
 
   importsForModel(model: DocGenModel): {
@@ -152,5 +150,13 @@ export class Helper {
 
   isDate(field: Field): boolean {
     return field.kind === "scalar" && field.type === "DateTime";
+  }
+
+  // Mais segura (remove espaços do começo e lida melhor com alguns caracteres)
+  static capitalizeFirstSafe(str: string): string {
+    const s = str.trimStart();
+    if (!s) return s;
+    const [first, ...rest] = Array.from(s); // lida melhor com unicode
+    return first.toUpperCase() + rest.join("");
   }
 }

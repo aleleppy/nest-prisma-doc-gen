@@ -1,14 +1,10 @@
-import { DocGenFile } from "../file.js";
-import { Helper } from "../utils/helpers.js";
-import { Static } from "../static.js";
 import { Model } from "../types.js";
 import { DocGenField } from "./field.js";
 
 export class DocGenResponse {
   name: string;
-  file: DocGenFile;
+  // file: DocGenFile;
   fields: DocGenField[] = [];
-  imports = new Set([`${Static.AUTO_GENERATED_COMMENT}`, `import { ApiProperty } from '@nestjs/swagger'`]);
   enums = new Set<string>();
 
   constructor(model: Model) {
@@ -19,35 +15,20 @@ export class DocGenResponse {
 
       this.fields.push(new DocGenField(field, "res"));
     }
-
-    this.file = new DocGenFile({
-      dir: "/res",
-      fileName: `${Helper.toKebab(this.name)}.res.ts`,
-      data: this.build(),
-    });
   }
 
   build() {
     const sanitizedFields = this.fields
       .map((field) => {
-        if (field.isResponse) {
-          this.imports.add(`import { ${field.type} } from './${Helper.toKebab(field.scalarType)}.res'`);
-          this.imports.add(`import { generateExample } from 'src/utils/functions/reflect'`);
-        } else if (field.isEnum) {
+        if (field.isEnum) {
           this.enums.add(field.type);
         }
 
         return field.build();
       })
       .join("\n\n");
-
-    if (this.enums.size > 0) {
-      this.imports.add(`import { ${Array.from(this.enums)} } from '@prisma/client';`);
-    }
-
     return [
-      `${Array.from(this.imports).join("\n")}`,
-      `export class ${this.name}ResDG {
+      `class ${this.name}Res {
         ${sanitizedFields}
       }`,
     ].join("\n\n");
