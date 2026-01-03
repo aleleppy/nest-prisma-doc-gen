@@ -23,8 +23,11 @@ export class DocGenModel {
 
     const intaaa = `
       export namespace ${this.name} {
+        export const Dto = ${this.name}Dto;
         export type Dto = ${this.name}Dto;
+        export const Res = ${this.name}Res;
         export type Res = ${this.name}Res;
+        export const Id = ${this.name}Id;
         export type Id = ${this.name}Id;
       }
     `;

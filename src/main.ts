@@ -96,7 +96,7 @@ export class DocGen {
         const name = Helper.capitalizeFirstSafe(field.name);
 
         exportTypes.push(`
-          export type ${name} = ${name}Dto
+          export const ${name} = ${name}Dto
         `);
 
         return `
