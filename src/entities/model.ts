@@ -1,3 +1,4 @@
+import { FieldType } from "../config.type.js";
 import { DocGenFile } from "../file.js";
 import { Field, Model } from "../types.js";
 import { Helper } from "../utils/helpers.js";
@@ -21,6 +22,44 @@ export class DocGenModel {
 
     this.exports = [`export * from './types/${Helper.toKebab(this.name)}'`];
 
+    const teste = new Map<string, FieldType[]>();
+
+    const bla = [...this.dto.fields, ...this.response.fields];
+
+    bla.forEach((field) => {
+      let a = teste.get(field.name);
+
+      if (!a) {
+        a = [];
+        teste.set(field.name, a);
+      }
+
+      a.push(field.fieldType);
+    });
+
+    const fdm = `
+            export namespace Input {
+          ${Array.from(teste)
+            .map(([fieldName, fieldTypes]) => {
+              const name = Helper.capitalizeFirstSafe(fieldName);
+              const types = fieldTypes.map((type) => Helper.capitalizeFirstSafe(type));
+              return `
+              export namespace ${name} {
+                ${types
+                  .map((type) => {
+                    return `
+                    export type ${type} = ${name + type}
+                    export const ${type} = ${name + type}
+                  `;
+                  })
+                  .join(";")}
+              }
+            `;
+            })
+            .join(";")}
+        }
+    `;
+
     const intaaa = `
       export namespace ${this.name} {
         export const Dto = ${this.name}Dto;
@@ -29,6 +68,7 @@ export class DocGenModel {
         export type Res = ${this.name}Res;
         export const Id = ${this.name}Id;
         export type Id = ${this.name}Id;
+            ${fdm}
       }
     `;
 

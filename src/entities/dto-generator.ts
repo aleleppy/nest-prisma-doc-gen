@@ -8,7 +8,7 @@ export class DocGenDto {
   name: string;
   // file: DocGenFile;
   fields: DocGenField[] = [];
-  imports = new Set([`${Static.AUTO_GENERATED_COMMENT}`, `import { ApiProperty } from '@nestjs/swagger'`]);
+  imports = new Set([`${Static.AUTO_GENERATED_COMMENT}`, `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`]);
   classValidators = new Set<string>();
   enums = new Set<string>();
 
@@ -39,7 +39,9 @@ export class DocGenDto {
           this.enums.add(field.type);
         }
 
-        return field.build();
+        return `class ${Helper.capitalizeFirstSafe(field.name)}Dto {
+          ${field.build()}
+        }`;
       })
       .join("\n\n");
 
@@ -50,10 +52,12 @@ export class DocGenDto {
 
     this.imports.add(`import { ${Array.from(this.classValidators)} } from '${config.validatorPath}';`);
 
+    const intersections = this.fields.map((field) => Helper.capitalizeFirstSafe(field.name) + "Dto");
+
     return [
       `${Array.from(this.imports).join("\n")}`,
-      `class ${this.name}Dto {
-        ${sanitizedFields}
+      `${sanitizedFields}`,
+      `class ${this.name}Dto extends IntersectionType(${intersections.join(",")}) {
       }`,
       `class ${this.name}Id {
         @ApiProperty({ type: 'string', example: 'cmfxu4njg000008l52v7t8qze', required: true })

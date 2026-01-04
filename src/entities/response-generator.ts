@@ -1,4 +1,5 @@
 import { Model } from "../types.js";
+import { Helper } from "../utils/helpers.js";
 import { DocGenField } from "./field.js";
 
 export class DocGenResponse {
@@ -24,13 +25,13 @@ export class DocGenResponse {
           this.enums.add(field.type);
         }
 
-        return field.build();
+        return `class ${Helper.capitalizeFirstSafe(field.name)}Res {
+          ${field.build()}
+        }`;
       })
       .join("\n\n");
-    return [
-      `class ${this.name}Res {
-        ${sanitizedFields}
-      }`,
-    ].join("\n\n");
+
+    const intersections = this.fields.map((field) => Helper.capitalizeFirstSafe(field.name) + "Res");
+    return [`${sanitizedFields}`, `class ${this.name}Res extends IntersectionType(${intersections.join(",")}) {}`].join("\n\n");
   }
 }
