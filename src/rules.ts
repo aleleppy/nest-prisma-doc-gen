@@ -5,14 +5,18 @@ export class DocGenRules {
   examples: Map<string, ApiExampleBuilder>;
   validators: Map<string, string[]>;
   validatorPath: string;
+  prismaPath: string;
 
   constructor(params: {
     ignore: string[];
     examples: ApiExampleBuilder[];
     validators: ValidatorBuilder[];
     validatorPath: string;
+    prismaPath: string;
   }) {
-    const { examples, ignore, validators, validatorPath } = params;
+    const { examples, ignore, validators, validatorPath, prismaPath } = params;
+
+    this.prismaPath = prismaPath;
 
     this.ignore = ignore;
     this.validatorPath = validatorPath;

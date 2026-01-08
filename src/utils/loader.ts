@@ -20,13 +20,15 @@ export class DocGenConfig {
   public readonly examples: Map<string, ApiExampleBuilder>;
   public readonly validators: Map<string, string[]>;
   public readonly validatorPath: string;
+  public readonly prismaPath: string;
 
   constructor(configs: DocGenRules) {
-    const { examples, ignore, validators, validatorPath } = configs;
+    const { examples, ignore, validators, validatorPath, prismaPath } = configs;
     this.ignore = ignore;
     this.examples = examples;
     this.validators = validators;
     this.validatorPath = validatorPath;
+    this.prismaPath = prismaPath;
   }
 
   private static async readJson(filePath: string) {
@@ -49,8 +51,6 @@ export class DocGenConfig {
       const errors = (validate.errors ?? []).map((e) => `${e.instancePath || "(root)"} ${e.message}`).join("\n - ");
       throw new Error(`❌ Config inválida em ${path.basename(CONFIG_PATH)}:\n - ${errors}`);
     }
-
-    console.log("✅ Configuração válida!");
 
     return DocGenConfig.newWithConfigs(config);
   }

@@ -25,6 +25,11 @@
       "description": "Caminho (path) para o arquivo/pasta de validators usado pelo gerador."
     },
 
+    "PrismaPath": {
+      "type": "string",
+      "description": "Caminho (path) para o schema/pasta do Prisma usado pelo gerador (ex: prisma/schemas)."
+    },
+
     "ValidatorBuilder": {
       "additionalProperties": false,
       "type": "object",
@@ -60,6 +65,9 @@
         "validatorPath": {
           "$ref": "#/definitions/ValidatorPath"
         },
+        "prismaPath": {
+          "$ref": "#/definitions/PrismaPath"
+        },
         "examples": {
           "type": "array",
           "items": { "$ref": "#/definitions/ApiExampleBuilder" },
@@ -71,7 +79,7 @@
           "description": "Lista de validadores associados a campos específicos."
         }
       },
-      "required": ["ignore", "validatorPath", "examples", "validators"]
+      "required": ["ignore", "validatorPath", "prismaPath", "examples", "validators"]
     }
   }
 }

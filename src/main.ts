@@ -10,12 +10,13 @@ import { PrismaUtils } from "./utils/prisma-utils.js";
 import { DocGenGeneric } from "./entities/generic.js";
 import { DocGenFile } from "./file.js";
 import { DocGenField } from "./entities/field.js";
+import { config } from "./utils/loader.js";
 // import { Helper } from "./utils/helpers.js";
 
 const { getDMMF } = prismaPkg;
 
 const ROOT = process.cwd();
-const PRISMA_DIR = path.join(ROOT, "src");
+const PRISMA_DIR = path.join(ROOT, config.prismaPath);
 
 export class DocGen {
   datamodel!: string;

@@ -77,4 +77,5 @@ export type DocGenParams = {
   examples: ApiExampleBuilder[];
   validators: ValidatorBuilder[];
   validatorPath: string;
+  prismaPath: string;
 };

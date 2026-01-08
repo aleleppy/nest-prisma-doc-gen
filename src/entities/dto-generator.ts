@@ -8,7 +8,11 @@ export class DocGenDto {
   name: string;
   // file: DocGenFile;
   fields: DocGenField[] = [];
-  imports = new Set([`${Static.AUTO_GENERATED_COMMENT}`, `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`]);
+  imports = new Set([
+    `${Static.AUTO_GENERATED_COMMENT}`,
+    "/* eslint-disable @typescript-eslint/no-namespace */",
+    `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`,
+  ]);
   classValidators = new Set<string>();
   enums = new Set<string>();
 
@@ -54,11 +58,17 @@ export class DocGenDto {
 
     const intersections = this.fields.map((field) => Helper.capitalizeFirstSafe(field.name) + "Dto");
 
+    const intersectionClassName = `class ${this.name}Dto`;
+
+    const intersectionClass =
+      intersections.length > 0
+        ? `${intersectionClassName} extends IntersectionType(${intersections.join(",")}) {}`
+        : `${intersectionClassName}{}`;
+
     return [
       `${Array.from(this.imports).join("\n")}`,
       `${sanitizedFields}`,
-      `class ${this.name}Dto extends IntersectionType(${intersections.join(",")}) {
-      }`,
+      `${intersectionClass}`,
       `class ${this.name}Id {
         @ApiProperty({ type: 'string', example: 'cmfxu4njg000008l52v7t8qze', required: true })
         @IsString()
