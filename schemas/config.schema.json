@@ -43,6 +43,22 @@
           "type": "array",
           "items": { "type": "string" },
           "description": "Campos que recebem este validador."
+        },
+        "inside": {
+          "type": "object",
+          "description": "Configuração opcional passada para dentro do decorator.",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["number", "string"],
+              "description": "Tipo do valor passado para o decorator."
+            },
+            "content": {
+              "description": "Conteúdo passado para o decorator (qualquer tipo)."
+            }
+          },
+          "required": ["type", "content"]
         }
       },
       "required": ["decorator", "fields"]

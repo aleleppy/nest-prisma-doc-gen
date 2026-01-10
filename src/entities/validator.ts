@@ -1,15 +1,22 @@
+import { Inside } from "../config.type.js";
 export class Validator {
   name: string;
-  content: string;
+  inside?: Inside;
 
-  constructor(params: { name: string; content?: string }) {
-    const { content, name } = params;
+  constructor(params: { name: string; inside?: Inside }) {
+    const { name, inside } = params;
 
     this.name = name;
-    this.content = content ?? "";
+    this.inside = inside;
   }
 
-  build() {
-    return `@${this.name}(${this.content})`;
+  build(): string {
+    if (!this.inside) {
+      return `@${this.name}()`;
+    }
+
+    const value = this.inside.type === "number" ? this.inside.content : `'${this.inside.content}'`;
+
+    return `@${this.name}(${value})`;
   }
 }

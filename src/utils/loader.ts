@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { DocGenRules } from "../rules.js";
+import { DocGenRules, Validators } from "../rules.js";
 import { ApiExampleBuilder } from "../config.type.js";
 import { DocGenParams } from "../types.js";
 import Ajv from "ajv";
@@ -18,14 +18,16 @@ const CONFIG_PATH = path.join(process.cwd(), "doc-gen.config.json");
 export class DocGenConfig {
   public readonly ignore: string[];
   public readonly examples: Map<string, ApiExampleBuilder>;
-  public readonly validators: Map<string, string[]>;
+  public readonly validators: Validators;
   public readonly validatorPath: string;
   public readonly prismaPath: string;
 
   constructor(configs: DocGenRules) {
     const { examples, ignore, validators, validatorPath, prismaPath } = configs;
+
     this.ignore = ignore;
     this.examples = examples;
+
     this.validators = validators;
     this.validatorPath = validatorPath;
     this.prismaPath = prismaPath;

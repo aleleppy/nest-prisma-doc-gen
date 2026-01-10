@@ -1,4 +1,4 @@
-import { FieldType } from "../config.type.js";
+import { FieldType, Inside } from "../config.type.js";
 import { Helper } from "../utils/helpers.js";
 import { config } from "../utils/loader.js";
 import { FieldDefault, Scalar, FieldKind, Field } from "../types.js";
@@ -41,29 +41,33 @@ export class DocGenField {
     this.setValidators();
   }
 
-  private processValidator(name: string) {
-    const validator = new Validator({ name });
-    if (this.isArray) validator.content = "{ each: true }";
+  private processValidator(params: { name: string; inside?: Inside }) {
+    const validator = new Validator(params);
+    if (this.isArray)
+      validator.inside = {
+        type: "number",
+        content: "{ each: true }",
+      };
 
     this.validators.add(validator);
   }
 
   private setValidators() {
     if (this.scalarType === "String" || this.scalarType === "DateTime" || this.scalarType === "Json") {
-      this.processValidator("IsString");
+      this.processValidator({ name: "IsString" });
 
       if (this.isRequired) {
-        this.processValidator("IsNotEmpty");
+        this.processValidator({ name: "IsNotEmpty" });
       }
     } else if (this.scalarType === "Boolean") {
-      this.processValidator("IsBoolean");
+      this.processValidator({ name: "IsBoolean" });
     } else if (
       this.scalarType === "Int" ||
       this.scalarType === "BigInt" ||
       this.scalarType === "Float" ||
       this.scalarType === "Decimal"
     ) {
-      this.processValidator("IsNumber");
+      this.processValidator({ name: "IsNumber" });
     }
 
     if (this.isArray) {
@@ -71,7 +75,7 @@ export class DocGenField {
       this.validators.add(validator);
     }
 
-    if (!this.isRequired) this.processValidator("IsOptional");
+    if (!this.isRequired) this.processValidator({ name: "IsOptional" });
 
     if (this.isEnum) {
       const content = this.isArray ? `${this.type}, { each: true } ` : this.type;
@@ -79,7 +83,10 @@ export class DocGenField {
       this.validators.add(
         new Validator({
           name: "IsEnum",
-          content,
+          inside: {
+            content,
+            type: "number",
+          },
         })
       );
     }
@@ -87,8 +94,9 @@ export class DocGenField {
     const findedDecorators = rules.validators.get(this.name);
 
     if (findedDecorators) {
-      for (const name of findedDecorators) {
-        this.processValidator(name);
+      for (const props of findedDecorators) {
+        const { decorator, inside } = props;
+        this.processValidator({ name: decorator, inside: inside });
       }
     }
   }
@@ -105,6 +113,18 @@ export class DocGenField {
     }
   }
 
+  private getRuledExample(fieldName: string): string {
+    const example = rules.examples.get(fieldName)?.example;
+
+    if (!example && example !== 0) {
+      return "example: 'aaaa'";
+    }
+
+    const isNumber = Number.isInteger(example);
+
+    return isNumber ? `example: ${example}` : `example: '${example}'`;
+  }
+
   private buildApiExample(): string[] {
     const fieldName = this.scalarField.name;
     const props: string[] = [];
@@ -115,8 +135,8 @@ export class DocGenField {
       } else {
         props.push(`example: generateExample(${this.type})`);
       }
-    } else if (rules.examples.has(fieldName)) {
-      props.push(`example: '${rules.examples.get(fieldName)?.example}'`);
+    } else if (rules.examples.get(fieldName)) {
+      props.push(this.getRuledExample(fieldName));
     } else if (helpers.isDate(this.scalarField)) {
       props.push(`example: '2025-09-03T03:00:00.000Z'`);
     } else if (this.scalarField.isId || Helper.splitByUpperCase(this.scalarField.name).includes("Id")) {

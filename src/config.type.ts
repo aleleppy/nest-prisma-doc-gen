@@ -1,13 +1,20 @@
 export type FieldType = "res" | "dto";
 type ExampleType = string | boolean | number;
 
+export interface Inside {
+  type: "string" | "number";
+  content: string | number;
+}
+
 export class ValidatorBuilder {
   decorator: string;
+  inside?: Inside;
   fields: string[];
 
-  constructor(decorator: string, fields: string[]) {
+  constructor(decorator: string, fields: string[], inside?: Inside) {
     this.decorator = decorator;
     this.fields = fields;
+    this.inside = inside;
   }
 }
 
