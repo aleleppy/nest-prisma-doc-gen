@@ -1,6 +1,8 @@
 # Nest Prisma DocGen
 
-[![npm version](https://img.shields.io/badge/npm-v1.0.24-blue.svg)](https://www.npmjs.com/package/nest-prisma_doc-gen)
+[![npm version](https://img.shields.io/npm/v/nest-prisma_doc-gen.svg)](https://www.npmjs.com/package/nest-prisma_doc-gen)
+[![npm downloads](https://img.shields.io/npm/dm/nest-prisma_doc-gen.svg)](https://www.npmjs.com/package/nest-prisma_doc-gen)
+[![npm total downloads](https://img.shields.io/npm/dt/nest-prisma_doc-gen.svg)](https://www.npmjs.com/package/nest-prisma_doc-gen)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6+-blue.svg)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-9+-red.svg)](https://nestjs.com/)
 [![Prisma](https://img.shields.io/badge/Prisma-7+-2D3748.svg)](https://www.prisma.io/)
