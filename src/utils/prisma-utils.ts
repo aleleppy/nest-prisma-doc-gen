@@ -1,7 +1,48 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
+import { ExternalPrismaSchema } from "../config.type.js";
 
 export class PrismaUtils {
+  static async fetchExternalSchemas(
+    schemas: ExternalPrismaSchema[]
+  ): Promise<{ name: string; prismaSchema: string }[]> {
+    const results: { name: string; prismaSchema: string }[] = [];
+    if (!schemas.length) return results;
+
+    for (const schema of schemas) {
+      const apiKey = schema.resolveApiKey();
+
+      const headers: Record<string, string> = {};
+      if (apiKey) {
+        headers["api-key"] = apiKey;
+      }
+
+      try {
+        const response = await fetch(schema.url, { headers });
+
+        if (!response.ok) {
+          console.error(`❌ Falha ao buscar schema externo (${response.status}): ${schema.url}`);
+          continue;
+        }
+
+        const json = await response.json();
+        const prismaSchema = json?.data?.prisma;
+
+        if (!prismaSchema || typeof prismaSchema !== "string") {
+          console.error(`❌ Schema externo '${schema.name}' não contém data.prisma válido.`);
+          continue;
+        }
+
+        console.log(`📄 Schema externo '${schema.name}' carregado com sucesso.`);
+        results.push({ name: schema.name, prismaSchema });
+      } catch (err) {
+        console.error(`❌ Erro ao buscar schema externo '${schema.name}': ${schema.url}`, err);
+      }
+    }
+
+    return results;
+  }
+
   static async readPrismaFolderDatamodel(dir: string): Promise<string> {
     const prismaFiles: string[] = [];
 

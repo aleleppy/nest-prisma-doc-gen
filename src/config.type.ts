@@ -28,6 +28,28 @@ export class ApiExampleBuilder {
   }
 }
 
+export class ExternalPrismaSchema {
+  name: string;
+  url: string;
+  apiKey?: string;
+
+  constructor(name: string, url: string, apiKey?: string) {
+    this.name = name;
+    this.url = url;
+    this.apiKey = apiKey;
+  }
+
+  /** Resolve apiKey: se começa com '$', busca de process.env; senão, retorna literal */
+  resolveApiKey(): string | undefined {
+    if (!this.apiKey) return undefined;
+    if (this.apiKey.startsWith("$")) {
+      const envVar = this.apiKey.slice(1);
+      return process.env[envVar];
+    }
+    return this.apiKey;
+  }
+}
+
 export type Rules = {
   ignore: string[];
   examples: ApiExampleBuilder[];

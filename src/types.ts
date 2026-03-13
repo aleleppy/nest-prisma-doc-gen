@@ -1,4 +1,4 @@
-import { ApiExampleBuilder, FieldType, ValidatorBuilder } from "./config.type.js";
+import { ApiExampleBuilder, ExternalPrismaSchema, FieldType, ValidatorBuilder } from "./config.type.js";
 
 export type FieldKind = "scalar" | "object" | "enum";
 type FieldDefaultName = "now" | "autoincrement" | "cuid";
@@ -78,4 +78,5 @@ export type DocGenParams = {
   validators: ValidatorBuilder[];
   validatorPath: string;
   prismaPath: string;
+  externalPrismaSchemas?: ExternalPrismaSchema[];
 };

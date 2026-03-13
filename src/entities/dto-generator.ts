@@ -15,9 +15,11 @@ export class DocGenDto {
   ]);
   classValidators = new Set<string>();
   enums = new Set<string>();
+  enumImportPath: string;
 
-  constructor(model: Model) {
+  constructor(model: Model, enumImportPath?: string) {
     this.name = model.name;
+    this.enumImportPath = enumImportPath ?? "@prisma/client";
 
     this.classValidators.add("IsString");
     this.classValidators.add("IsNotEmpty");
@@ -51,7 +53,7 @@ export class DocGenDto {
 
     if (this.enums.size > 0) {
       this.classValidators.add("IsEnum");
-      this.imports.add(`import { ${Array.from(this.enums)} } from '@prisma/client';`);
+      this.imports.add(`import { ${Array.from(this.enums)} } from '${this.enumImportPath}';`);
     }
 
     this.imports.add(`import { ${Array.from(this.classValidators)} } from '${config.validatorPath}';`);

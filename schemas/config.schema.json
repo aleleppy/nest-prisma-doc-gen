@@ -30,6 +30,28 @@
       "description": "Caminho (path) para o schema/pasta do Prisma usado pelo gerador (ex: prisma/schemas)."
     },
 
+    "ExternalPrismaSchema": {
+      "additionalProperties": false,
+      "type": "object",
+      "description": "Schema Prisma externo a ser buscado via URL.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome do serviço externo. Usado como prefixo nos arquivos e nome da pasta (ex: 'transaction')."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL do schema Prisma externo."
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "Chave de API para autenticação. Use prefixo '$' para referenciar variável de ambiente (ex: '$MY_API_KEY')."
+        }
+      },
+      "required": ["name", "url"]
+    },
+
     "ValidatorBuilder": {
       "additionalProperties": false,
       "type": "object",
@@ -83,6 +105,11 @@
         },
         "prismaPath": {
           "$ref": "#/definitions/PrismaPath"
+        },
+        "externalPrismaSchemas": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/ExternalPrismaSchema" },
+          "description": "Lista de schemas Prisma externos a serem buscados via URL."
         },
         "examples": {
           "type": "array",

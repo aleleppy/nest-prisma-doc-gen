@@ -1,4 +1,4 @@
-import { ApiExampleBuilder, Inside, ValidatorBuilder } from "./config.type.js";
+import { ApiExampleBuilder, ExternalPrismaSchema, Inside, ValidatorBuilder } from "./config.type.js";
 
 type ValidatorRules = { decorator: string; inside?: Inside }[];
 export type Validators = Map<string, ValidatorRules>;
@@ -9,6 +9,7 @@ export class DocGenRules {
   validators: Validators;
   validatorPath: string;
   prismaPath: string;
+  externalPrismaSchemas: ExternalPrismaSchema[];
 
   constructor(params: {
     ignore: string[];
@@ -16,10 +17,12 @@ export class DocGenRules {
     validators: ValidatorBuilder[];
     validatorPath: string;
     prismaPath: string;
+    externalPrismaSchemas?: ExternalPrismaSchema[];
   }) {
-    const { examples, ignore, validators, validatorPath, prismaPath } = params;
+    const { examples, ignore, validators, validatorPath, prismaPath, externalPrismaSchemas } = params;
 
     this.prismaPath = prismaPath;
+    this.externalPrismaSchemas = (externalPrismaSchemas ?? []).map((s) => new ExternalPrismaSchema(s.name, s.url, s.apiKey));
 
     this.ignore = ignore;
     this.validatorPath = validatorPath;

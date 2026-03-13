@@ -11,7 +11,8 @@ import { DocGenGeneric } from "./entities/generic.js";
 import { DocGenFile } from "./file.js";
 import { DocGenField } from "./entities/field.js";
 import { config } from "./utils/loader.js";
-// import { Helper } from "./utils/helpers.js";
+import { Helper } from "./utils/helpers.js";
+import { Static } from "./static.js";
 
 const { getDMMF } = prismaPkg;
 
@@ -28,7 +29,16 @@ export class DocGen {
   indexFile!: DocGenFile;
   // fieldFile!: DocGenFile;
 
+  externalIndexExports: string[] = [];
+
   async init() {
+    // Busca e processa schemas externos
+    const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas);
+
+    for (const external of externalSchemas) {
+      await this.processExternalSchema(external.name, external.prismaSchema);
+    }
+
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
 
@@ -47,6 +57,54 @@ export class DocGen {
     });
 
     this.build();
+  }
+
+  async processExternalSchema(name: string, prismaSchema: string) {
+    const { datamodel } = await getDMMF({ datamodel: prismaSchema });
+
+    const servicePrefix = Helper.toKebab(name);
+    const serviceIndexExports: string[] = [];
+
+    // Gerar enums.ts com os enums do schema externo
+    if (datamodel.enums.length > 0) {
+      const enumDeclarations = datamodel.enums
+        .map((e) => {
+          const values = e.values.map((v: { name: string }) => `  ${v.name} = '${v.name}'`).join(",\n");
+          return `export enum ${e.name} {\n${values}\n}`;
+        })
+        .join("\n\n");
+
+      const enumFileData = [Static.AUTO_GENERATED_COMMENT, enumDeclarations].join("\n\n");
+
+      const enumFile = new DocGenFile({
+        dir: `/${servicePrefix}`,
+        fileName: "enums.ts",
+        data: enumFileData,
+      });
+
+      enumFile.save();
+    }
+
+    for (const model of datamodel.models) {
+      const docModel = new DocGenModel(model as Model, servicePrefix);
+      serviceIndexExports.push(...docModel.exports);
+      docModel.save();
+    }
+
+    // Index do serviço: src/types/docgen/{servicePrefix}/index.ts
+    const serviceIndexFile = new DocGenFile({
+      dir: `/${servicePrefix}`,
+      fileName: "index.ts",
+      data: serviceIndexExports.join("\n"),
+    });
+
+    serviceIndexFile.save();
+
+    // Export no index principal: export * as DG_TRANSACTION from './transaction/index'
+    const aliasName = `DG_${name.toUpperCase()}`;
+    this.externalIndexExports.push(`export * as ${aliasName} from './${servicePrefix}/index'`);
+
+    console.log(`📦 Gerados ${datamodel.models.length} models para '${name}'.`);
   }
 
   build() {
@@ -75,6 +133,7 @@ export class DocGen {
       model.save();
     }
 
+    indexFileData.push(...this.externalIndexExports);
     indexFileData.push("export * as DG from 'src/types/docgen/index';");
 
     const fieldMap = new Map<string, DocGenField>();

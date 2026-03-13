@@ -12,15 +12,22 @@ export class DocGenModel {
   fields: Field[];
   exports: string[];
   file: DocGenFile;
+  servicePrefix?: string;
 
-  constructor(model: Model) {
+  constructor(model: Model, servicePrefix?: string) {
     this.name = model.name;
     this.fields = model.fields;
+    this.servicePrefix = servicePrefix;
+
+    const enumImportPath = servicePrefix ? "../enums" : undefined;
 
     this.response = new DocGenResponse(model);
-    this.dto = new DocGenDto(model);
+    this.dto = new DocGenDto(model, enumImportPath);
 
-    this.exports = [`export * from './types/${Helper.toKebab(this.name)}'`];
+    const kebabName = Helper.toKebab(this.name);
+    const fileName = servicePrefix ? `${servicePrefix}.${kebabName}` : kebabName;
+
+    this.exports = [`export * from './types/${fileName}'`];
 
     const teste = new Map<string, FieldType[]>();
 
@@ -72,11 +79,20 @@ export class DocGenModel {
       }
     `;
 
-    const data = [this.dto.build(), this.response.build(), intaaa].join("");
+    // Build response primeiro para coletar enums, depois mergear no DTO
+    const responseResult = this.response.build();
+    for (const e of this.response.enums) {
+      this.dto.enums.add(e);
+    }
+    const dtoResult = this.dto.build();
+
+    const data = [dtoResult, responseResult, intaaa].join("");
+
+    const fileDir = servicePrefix ? `/${servicePrefix}/types` : "/types";
 
     this.file = new DocGenFile({
-      dir: "/types",
-      fileName: `${Helper.toKebab(this.name)}.ts`,
+      dir: fileDir,
+      fileName: `${fileName}.ts`,
       data,
     });
   }
