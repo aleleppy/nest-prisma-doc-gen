@@ -1,9 +1,10 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import * as prettier from "prettier";
+import { config } from "./utils/loader.js";
 
 const ROOT = process.cwd();
-const OUT_DIR = path.join(ROOT, "src/types/docgen");
+const OUT_DIR = path.join(ROOT, config.outputPath);
 
 export class DocGenFile {
   outDir: string;

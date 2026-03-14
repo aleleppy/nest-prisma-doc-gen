@@ -9,6 +9,7 @@ export class DocGenRules {
   validators: Validators;
   validatorPath: string;
   prismaPath: string;
+  outputPath: string;
   externalPrismaSchemas: ExternalPrismaSchema[];
 
   constructor(params: {
@@ -17,11 +18,13 @@ export class DocGenRules {
     validators: ValidatorBuilder[];
     validatorPath: string;
     prismaPath: string;
+    outputPath: string;
     externalPrismaSchemas?: ExternalPrismaSchema[];
   }) {
-    const { examples, ignore, validators, validatorPath, prismaPath, externalPrismaSchemas } = params;
+    const { examples, ignore, validators, validatorPath, prismaPath, outputPath, externalPrismaSchemas } = params;
 
     this.prismaPath = prismaPath;
+    this.outputPath = outputPath;
     this.externalPrismaSchemas = (externalPrismaSchemas ?? []).map((s) => new ExternalPrismaSchema(s.name, s.url, s.apiKey));
 
     this.ignore = ignore;

@@ -78,5 +78,6 @@ export type DocGenParams = {
   validators: ValidatorBuilder[];
   validatorPath: string;
   prismaPath: string;
+  outputPath: string;
   externalPrismaSchemas?: ExternalPrismaSchema[];
 };

@@ -21,10 +21,11 @@ export class DocGenConfig {
   public readonly validators: Validators;
   public readonly validatorPath: string;
   public readonly prismaPath: string;
+  public readonly outputPath: string;
   public readonly externalPrismaSchemas: ExternalPrismaSchema[];
 
   constructor(configs: DocGenRules) {
-    const { examples, ignore, validators, validatorPath, prismaPath, externalPrismaSchemas } = configs;
+    const { examples, ignore, validators, validatorPath, prismaPath, outputPath, externalPrismaSchemas } = configs;
 
     this.ignore = ignore;
     this.examples = examples;
@@ -32,6 +33,7 @@ export class DocGenConfig {
     this.validators = validators;
     this.validatorPath = validatorPath;
     this.prismaPath = prismaPath;
+    this.outputPath = outputPath;
     this.externalPrismaSchemas = externalPrismaSchemas;
   }
 
