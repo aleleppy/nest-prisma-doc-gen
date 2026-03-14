@@ -134,7 +134,7 @@ export class DocGen {
     }
 
     indexFileData.push(...this.externalIndexExports);
-    indexFileData.push(`export * as DG from '${config.outputPath}/index';`);
+    indexFileData.push(`export * as DG from '../docgen';`);
 
     const fieldMap = new Map<string, DocGenField>();
 
