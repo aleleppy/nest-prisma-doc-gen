@@ -35,6 +35,7 @@ export class DocGen {
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
 
+    console.log("starting2");
     // Busca e processa schemas externos (precisa do schema principal para resolver tipos)
     const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas);
     const mainModelNames = new Set(datamodel.models.map((m) => m.name));
@@ -61,23 +62,55 @@ export class DocGen {
     this.build();
   }
 
+  /**
+   * Tenta getDMMF e, se falhar por tipos não encontrados, remove os campos
+   * que referenciam esses tipos e retenta.
+   */
+  async getDMMFSafe(schema: string): Promise<Awaited<ReturnType<typeof getDMMF>>> {
+    try {
+      return await getDMMF({ datamodel: schema });
+    } catch (err: any) {
+      const message = err?.message ?? "";
+      const missingTypes = [...message.matchAll(/Type "(\w+)" is neither a built-in type/g)].map(
+        (m: RegExpMatchArray) => m[1],
+      );
+
+      if (missingTypes.length === 0) throw err;
+
+      const uniqueTypes = [...new Set(missingTypes)];
+      console.log(`⚠️  Removendo campos com tipos externos: ${uniqueTypes.join(", ")}`);
+
+      // Remove linhas que referenciam os tipos desconhecidos
+      const typePattern = uniqueTypes.join("|");
+      const re = new RegExp(`^\\s+\\w+\\s+(${typePattern})[\\s\\[\\]\\?].*$`, "gm");
+      const cleaned = schema.replaceAll(re, "");
+
+      return await getDMMF({ datamodel: cleaned });
+    }
+  }
+
   async processExternalSchema(
     name: string,
     prismaSchema: string,
     mainPrismaDataModel: string,
     mainModelNames: Set<string>,
-    mainEnumNames: Set<string>
+    mainEnumNames: Set<string>,
   ) {
+    // Remove blocos datasource/generator do schema externo para evitar duplicatas
+    const cleanedExternal = prismaSchema
+      .replaceAll(/datasource\s+\w+\s*\{[^}]*\}/g, "")
+      .replaceAll(/generator\s+\w+\s*\{[^}]*\}/g, "");
+
     // Combina com o schema principal para que o Prisma resolva todos os tipos
-    const combined = mainPrismaDataModel + "\n" + prismaSchema;
-    const { datamodel } = await getDMMF({ datamodel: combined });
+    const combined = mainPrismaDataModel + "\n" + cleanedExternal;
+    const { datamodel } = await this.getDMMFSafe(combined);
 
     const servicePrefix = Helper.toKebab(name);
     const serviceIndexExports: string[] = [];
 
     // Filtra apenas models e enums do schema externo (ignora os do principal)
-    const externalModels = datamodel.models.filter((m) => !mainModelNames.has(m.name));
-    const externalEnums = datamodel.enums.filter((e) => !mainEnumNames.has(e.name));
+    const externalModels = datamodel.models.filter((m: { name: string }) => !mainModelNames.has(m.name));
+    const externalEnums = datamodel.enums.filter((e: { name: string }) => !mainEnumNames.has(e.name));
 
     // Gerar enums.ts com os enums do schema externo
     if (externalEnums.length > 0) {
