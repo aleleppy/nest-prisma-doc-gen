@@ -32,15 +32,17 @@ export class DocGen {
   externalIndexExports: string[] = [];
 
   async init() {
-    // Busca e processa schemas externos
-    const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas);
-
-    for (const external of externalSchemas) {
-      await this.processExternalSchema(external.name, external.prismaSchema);
-    }
-
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
+
+    // Busca e processa schemas externos (precisa do schema principal para resolver tipos)
+    const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas);
+    const mainModelNames = new Set(datamodel.models.map((m) => m.name));
+    const mainEnumNames = new Set(datamodel.enums.map((e) => e.name));
+
+    for (const external of externalSchemas) {
+      await this.processExternalSchema(external.name, external.prismaSchema, prismaDataModel, mainModelNames, mainEnumNames);
+    }
 
     const fieldSet = new Set<string>();
 
@@ -59,15 +61,27 @@ export class DocGen {
     this.build();
   }
 
-  async processExternalSchema(name: string, prismaSchema: string) {
-    const { datamodel } = await getDMMF({ datamodel: prismaSchema });
+  async processExternalSchema(
+    name: string,
+    prismaSchema: string,
+    mainPrismaDataModel: string,
+    mainModelNames: Set<string>,
+    mainEnumNames: Set<string>
+  ) {
+    // Combina com o schema principal para que o Prisma resolva todos os tipos
+    const combined = mainPrismaDataModel + "\n" + prismaSchema;
+    const { datamodel } = await getDMMF({ datamodel: combined });
 
     const servicePrefix = Helper.toKebab(name);
     const serviceIndexExports: string[] = [];
 
+    // Filtra apenas models e enums do schema externo (ignora os do principal)
+    const externalModels = datamodel.models.filter((m) => !mainModelNames.has(m.name));
+    const externalEnums = datamodel.enums.filter((e) => !mainEnumNames.has(e.name));
+
     // Gerar enums.ts com os enums do schema externo
-    if (datamodel.enums.length > 0) {
-      const enumDeclarations = datamodel.enums
+    if (externalEnums.length > 0) {
+      const enumDeclarations = externalEnums
         .map((e) => {
           const values = e.values.map((v: { name: string }) => `  ${v.name} = '${v.name}'`).join(",\n");
           return `export enum ${e.name} {\n${values}\n}`;
@@ -85,7 +99,7 @@ export class DocGen {
       enumFile.save();
     }
 
-    for (const model of datamodel.models) {
+    for (const model of externalModels) {
       const docModel = new DocGenModel(model as Model, servicePrefix);
       serviceIndexExports.push(...docModel.exports);
       docModel.save();
@@ -104,7 +118,7 @@ export class DocGen {
     const aliasName = `DG_${name.toUpperCase()}`;
     this.externalIndexExports.push(`export * as ${aliasName} from './${servicePrefix}/index'`);
 
-    console.log(`📦 Gerados ${datamodel.models.length} models para '${name}'.`);
+    console.log(`📦 Gerados ${externalModels.length} models para '${name}'.`);
   }
 
   build() {
