@@ -96,10 +96,19 @@ export class DocGen {
     mainModelNames: Set<string>,
     mainEnumNames: Set<string>,
   ) {
-    // Remove blocos datasource/generator do schema externo para evitar duplicatas
-    const cleanedExternal = prismaSchema
+    // Remove blocos datasource/generator e definições duplicadas do schema externo
+    const allMainNames = new Set([...mainModelNames, ...mainEnumNames]);
+    let cleanedExternal = prismaSchema
       .replaceAll(/datasource\s+\w+\s*\{[^}]*\}/g, "")
       .replaceAll(/generator\s+\w+\s*\{[^}]*\}/g, "");
+
+    // Remove models/enums que já existem no schema principal
+    for (const typeName of allMainNames) {
+      cleanedExternal = cleanedExternal.replaceAll(
+        new RegExp(`(?:model|enum)\\s+${typeName}\\s*\\{[^}]*\\}`, "g"),
+        "",
+      );
+    }
 
     // Combina com o schema principal para que o Prisma resolva todos os tipos
     const combined = mainPrismaDataModel + "\n" + cleanedExternal;
@@ -133,7 +142,7 @@ export class DocGen {
     }
 
     for (const model of externalModels) {
-      const docModel = new DocGenModel(model as Model, servicePrefix);
+      const docModel = new DocGenModel(model as Model, servicePrefix, mainEnumNames);
       serviceIndexExports.push(...docModel.exports);
       docModel.save();
     }

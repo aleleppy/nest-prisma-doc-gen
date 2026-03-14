@@ -16,10 +16,12 @@ export class DocGenDto {
   classValidators = new Set<string>();
   enums = new Set<string>();
   enumImportPath: string;
+  mainEnumNames: Set<string>;
 
-  constructor(model: Model, enumImportPath?: string) {
+  constructor(model: Model, enumImportPath?: string, mainEnumNames?: Set<string>) {
     this.name = model.name;
     this.enumImportPath = enumImportPath ?? "@prisma/client";
+    this.mainEnumNames = mainEnumNames ?? new Set();
 
     this.classValidators.add("IsString");
     this.classValidators.add("IsNotEmpty");
@@ -53,7 +55,16 @@ export class DocGenDto {
 
     if (this.enums.size > 0) {
       this.classValidators.add("IsEnum");
-      this.imports.add(`import { ${Array.from(this.enums)} } from '${this.enumImportPath}';`);
+
+      const localEnums = Array.from(this.enums).filter((e) => !this.mainEnumNames.has(e));
+      const prismaEnums = Array.from(this.enums).filter((e) => this.mainEnumNames.has(e));
+
+      if (localEnums.length > 0) {
+        this.imports.add(`import { ${localEnums.join(", ")} } from '${this.enumImportPath}';`);
+      }
+      if (prismaEnums.length > 0) {
+        this.imports.add(`import { ${prismaEnums.join(", ")} } from '@prisma/client';`);
+      }
     }
 
     this.imports.add(`import { ${Array.from(this.classValidators)} } from '${config.validatorPath}';`);

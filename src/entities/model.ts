@@ -14,7 +14,7 @@ export class DocGenModel {
   file: DocGenFile;
   servicePrefix?: string;
 
-  constructor(model: Model, servicePrefix?: string) {
+  constructor(model: Model, servicePrefix?: string, mainEnumNames?: Set<string>) {
     this.name = model.name;
     this.fields = model.fields;
     this.servicePrefix = servicePrefix;
@@ -22,7 +22,7 @@ export class DocGenModel {
     const enumImportPath = servicePrefix ? "../enums" : undefined;
 
     this.response = new DocGenResponse(model);
-    this.dto = new DocGenDto(model, enumImportPath);
+    this.dto = new DocGenDto(model, enumImportPath, mainEnumNames);
 
     const kebabName = Helper.toKebab(this.name);
     const fileName = servicePrefix ? `${servicePrefix}.${kebabName}` : kebabName;
