@@ -6,8 +6,7 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc && npm run copy-schemas",
-    "copy-schemas": "node scripts/copy-schemas.js"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -40,6 +39,6 @@
   },
   "files": [
     "dist",
-    "src/schemas/config.schema.json"
+    "schemas"
   ]
 }

@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Caminho para o schema dentro da lib
-const SCHEMA_PATH = path.join(__dirname, "../schemas/config.schema.json");
+const SCHEMA_PATH = path.join(__dirname, "../../schemas/config.schema.json");
 const CONFIG_PATH = path.join(process.cwd(), "doc-gen.config.json");
 
 export class DocGenConfig {
