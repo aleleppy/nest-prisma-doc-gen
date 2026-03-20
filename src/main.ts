@@ -22,12 +22,10 @@ const PRISMA_DIR = path.join(ROOT, config.prismaPath);
 export class DocGen {
   datamodel!: string;
   properties!: Set<string>;
-  // enums!: DocEnums;
   fields!: DocFields;
   models!: DocGenModel[];
   generic = new DocGenGeneric();
   indexFile!: DocGenFile;
-  // fieldFile!: DocGenFile;
 
   externalIndexExports: string[] = [];
 
@@ -35,7 +33,6 @@ export class DocGen {
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
     const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
 
-    console.log("starting2");
     // Busca e processa schemas externos (precisa do schema principal para resolver tipos)
     const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas);
     const mainModelNames = new Set(datamodel.models.map((m) => m.name));
@@ -71,9 +68,7 @@ export class DocGen {
       return await getDMMF({ datamodel: schema });
     } catch (err: any) {
       const message = err?.message ?? "";
-      const missingTypes = [...message.matchAll(/Type "(\w+)" is neither a built-in type/g)].map(
-        (m: RegExpMatchArray) => m[1],
-      );
+      const missingTypes = [...message.matchAll(/Type "(\w+)" is neither a built-in type/g)].map((m: RegExpMatchArray) => m[1]);
 
       if (missingTypes.length === 0) throw err;
 
@@ -104,10 +99,7 @@ export class DocGen {
 
     // Remove models/enums que já existem no schema principal
     for (const typeName of allMainNames) {
-      cleanedExternal = cleanedExternal.replaceAll(
-        new RegExp(`(?:model|enum)\\s+${typeName}\\s*\\{[^}]*\\}`, "g"),
-        "",
-      );
+      cleanedExternal = cleanedExternal.replaceAll(new RegExp(`(?:model|enum)\\s+${typeName}\\s*\\{[^}]*\\}`, "g"), "");
     }
 
     // Combina com o schema principal para que o Prisma resolva todos os tipos
@@ -170,21 +162,11 @@ export class DocGen {
     const indexFileData: string[] = [];
 
     const fields: DocGenField[] = [];
-    // const enumsSet = new Set<string>();
-    // const classValidatorsSet = new Set<string>();
 
     for (const model of this.models) {
       indexFileData.push(...model.exports);
 
       fields.push(...model.dto.fields);
-
-      // for (const e of model.dto.enums) {
-      //   enumsSet.add(e);
-      // }
-
-      // for (const classValidator of model.dto.classValidators) {
-      //   classValidatorsSet.add(classValidator);
-      // }
 
       model.save();
     }
@@ -200,45 +182,6 @@ export class DocGen {
       fieldMap.set(field.name, field);
     }
 
-    // const imports = new Set([`import { ApiProperty } from '@nestjs/swagger'`]);
-    // const validators = `import { ${Array.from(classValidatorsSet)} } from 'src/_nest/validators';`;
-
-    // const exportTypes: string[] = [];
-
-    // const fieldClasses = Array.from(fieldMap)
-    //   .map(([_, field]) => {
-    //     field.isRequired = true;
-    //     const name = Helper.capitalizeFirstSafe(field.name);
-
-    //     exportTypes.push(`
-    //       export const ${name} = ${name}Dto
-    //     `);
-
-    //     return `
-    //       class ${name}Dto {
-    //         ${field.build()}
-    //       }
-    //     `;
-    //   })
-    //   .join("\n");
-
-    // imports.add(`import { ${Array.from(enumsSet)} } from '@prisma/client';`);
-    // imports.add(validators);
-
-    // const teste = `
-    //   export namespace Input {
-    //     ${exportTypes.join(";")}
-    //   }
-    // `;
-
-    // const fieldFileContent = [Array.from(imports).join("\n"), fieldClasses, teste];
-
-    // this.fieldFile = new DocGenFile({
-    //   fileName: "fields.types.ts",
-    //   dir: "",
-    //   data: fieldFileContent.join("\n"),
-    // });
-
     this.indexFile = new DocGenFile({
       fileName: "index.ts",
       dir: "",
@@ -246,7 +189,6 @@ export class DocGen {
     });
 
     this.indexFile.save();
-    // this.fieldFile.save();
   }
 }
 

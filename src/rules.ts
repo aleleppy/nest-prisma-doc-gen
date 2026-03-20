@@ -35,7 +35,7 @@ export class DocGenRules {
     }
 
     this.examples = new Map<string, ApiExampleBuilder>(
-      examples.flatMap((builder) => builder.fields.map((field) => [field, builder]))
+      examples.flatMap((builder) => builder.fields.map((field) => [field, builder])),
     );
 
     const aaaValidators = new Map<string, ValidatorRules>();
@@ -53,9 +53,5 @@ export class DocGenRules {
     });
 
     this.validators = aaaValidators;
-
-    // this.validators = new Map<string, {decorator: string, inside?: Inside}>(
-
-    // );
   }
 }

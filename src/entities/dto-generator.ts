@@ -6,7 +6,6 @@ import { config } from "../utils/loader.js";
 
 export class DocGenDto {
   name: string;
-  // file: DocGenFile;
   fields: DocGenField[] = [];
   imports = new Set([
     `${Static.AUTO_GENERATED_COMMENT}`,
