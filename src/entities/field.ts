@@ -53,7 +53,9 @@ export class DocGenField {
   }
 
   private setValidators() {
-    if (this.scalarType === "String" || this.scalarType === "DateTime" || this.scalarType === "Json") {
+    if (this.scalarType === "DateTime") {
+      this.processValidator({ name: "IsDateString" });
+    } else if (this.scalarType === "String" || this.scalarType === "Json") {
       this.processValidator({ name: "IsString" });
 
       if (this.isRequired) {
