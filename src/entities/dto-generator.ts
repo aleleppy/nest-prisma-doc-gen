@@ -11,6 +11,7 @@ export class DocGenDto {
     `${Static.AUTO_GENERATED_COMMENT}`,
     "/* eslint-disable @typescript-eslint/no-namespace */",
     `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`,
+    `import { Expose } from 'class-transformer'`,
   ]);
   classValidators = new Set<string>();
   enums = new Set<string>();

@@ -213,7 +213,7 @@ export class DocGenField {
     if (this.fieldType === "dto") {
       return [apiProperty, ...validators, atributes].join("\n");
     } else {
-      return [apiProperty, atributes].join("\n");
+      return [apiProperty, "@Expose()", atributes].join("\n");
     }
   }
 }
