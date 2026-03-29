@@ -191,11 +191,14 @@ export class DocGenField {
     const fieldType = () => {
       if (this.isArray) {
         return `${this.type}[]`;
+      } else if (!this.isRequired && this.fieldType === "res") {
+        return `${this.type} | null`;
       } else {
         return this.type;
       }
     };
-    const optionalFlag = this.isRequired ? "!" : "?";
+    let optionalFlag = "?";
+    if (this.isRequired || this.fieldType === "res") optionalFlag = "!";
 
     const validators = this.sanitizeValidators();
     const apiExample = this.buildApiExample().join(", ");
