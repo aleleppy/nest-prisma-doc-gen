@@ -15,6 +15,7 @@ export class DocGenDto {
   ]);
   classValidators = new Set<string>();
   enums = new Set<string>();
+  hasJson: boolean = false;
   enumImportPath: string;
   mainEnumNames: Set<string>;
 
@@ -46,6 +47,7 @@ export class DocGenDto {
         } else if (field.isEnum) {
           this.enums.add(field.type);
         }
+        if (field.isJson) this.hasJson = true;
 
         return `class ${Helper.capitalizeFirstSafe(field.name)}Dto {
           ${field.build()}
@@ -62,9 +64,12 @@ export class DocGenDto {
       if (localEnums.length > 0) {
         this.imports.add(`import { ${localEnums.join(", ")} } from '${this.enumImportPath}';`);
       }
-      if (prismaEnums.length > 0) {
-        this.imports.add(`import { ${prismaEnums.join(", ")} } from '@prisma/client';`);
+      const prismaNamedImports = [...prismaEnums, ...(this.hasJson ? ["Prisma"] : [])];
+      if (prismaNamedImports.length > 0) {
+        this.imports.add(`import { ${prismaNamedImports.join(", ")} } from '@prisma/client';`);
       }
+    } else if (this.hasJson) {
+      this.imports.add(`import { Prisma } from '@prisma/client';`);
     }
 
     this.imports.add(`import { ${Array.from(this.classValidators)} } from '${config.validatorPath}';`);

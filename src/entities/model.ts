@@ -84,6 +84,7 @@ export class DocGenModel {
     for (const e of this.response.enums) {
       this.dto.enums.add(e);
     }
+    if (this.response.hasJson) this.dto.hasJson = true;
     const dtoResult = this.dto.build();
 
     const data = [dtoResult, responseResult, intaaa].join("");

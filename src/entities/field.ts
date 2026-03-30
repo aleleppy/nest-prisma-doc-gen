@@ -18,6 +18,7 @@ export class DocGenField {
   fieldType: FieldType;
 
   isEnum: boolean = false;
+  isJson: boolean = false;
   isResponse: boolean = false;
   isUpdatedAt: boolean = false;
   isRequired: boolean;
@@ -55,12 +56,14 @@ export class DocGenField {
   private setValidators() {
     if (this.scalarType === "DateTime") {
       this.processValidator({ name: "IsDateString" });
-    } else if (this.scalarType === "String" || this.scalarType === "Json") {
+    } else if (this.scalarType === "String") {
       this.processValidator({ name: "IsString" });
 
       if (this.isRequired) {
         this.processValidator({ name: "IsNotEmpty" });
       }
+    } else if (this.scalarType === "Json") {
+      this.processValidator({ name: "IsJSON" });
     } else if (this.scalarType === "Boolean") {
       this.processValidator({ name: "IsBoolean" });
     } else if (
@@ -111,7 +114,12 @@ export class DocGenField {
       this.isResponse = true;
       this.type = `${this.scalarType}Res`;
     } else if (this.kind === "scalar") {
-      this.type = Helper.prismaScalarToTs(this.scalarType);
+      if (this.scalarType === "Json") {
+        this.isJson = true;
+        this.type = "Prisma.JsonValue";
+      } else {
+        this.type = Helper.prismaScalarToTs(this.scalarType);
+      }
     }
   }
 
@@ -154,7 +162,7 @@ export class DocGenField {
       props.push(`example: 'ordinary string'`);
     }
 
-    if (this.type === "object") {
+    if (this.isJson) {
       props.push(`additionalProperties: true`);
     } else {
       props.push(`required: ${this.scalarField.isRequired}`);
@@ -175,6 +183,7 @@ export class DocGenField {
     const key = this.isEnum ? "enum" : "type";
 
     const apiType = () => {
+      if (this.isJson) return `'object'`;
       if (this.type === "Date") return `'string'`;
 
       if (this.isArray && this.isResponse) {

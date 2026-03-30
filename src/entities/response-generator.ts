@@ -7,6 +7,7 @@ export class DocGenResponse {
   // file: DocGenFile;
   fields: DocGenField[] = [];
   enums = new Set<string>();
+  hasJson: boolean = false;
 
   constructor(model: Model) {
     this.name = model.name;
@@ -24,6 +25,7 @@ export class DocGenResponse {
         if (field.isEnum) {
           this.enums.add(field.type);
         }
+        if (field.isJson) this.hasJson = true;
 
         return `class ${Helper.capitalizeFirstSafe(field.name)}Res {
           ${field.build()}
