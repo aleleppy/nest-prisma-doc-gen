@@ -92,7 +92,7 @@ export class DocGenField {
             content,
             type: "number",
           },
-        })
+        }),
       );
     }
 
@@ -116,7 +116,7 @@ export class DocGenField {
     } else if (this.kind === "scalar") {
       if (this.scalarType === "Json") {
         this.isJson = true;
-        this.type = "Prisma.JsonValue";
+        this.type = "Prisma.InputJsonValue";
       } else {
         this.type = Helper.prismaScalarToTs(this.scalarType);
       }
