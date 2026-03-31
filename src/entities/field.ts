@@ -116,7 +116,7 @@ export class DocGenField {
     } else if (this.kind === "scalar") {
       if (this.scalarType === "Json") {
         this.isJson = true;
-        this.type = "Prisma.InputJsonValue";
+        this.type = this.fieldType === "res" ? "Prisma.JsonValue" : "Prisma.InputJsonValue";
       } else {
         this.type = Helper.prismaScalarToTs(this.scalarType);
       }
