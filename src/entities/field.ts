@@ -166,6 +166,9 @@ export class DocGenField {
       props.push(`additionalProperties: true`);
     } else {
       props.push(`required: ${this.scalarField.isRequired}`);
+      if (!this.scalarField.isRequired) {
+        props.push(`nullable: true`);
+      }
     }
 
     return props;
