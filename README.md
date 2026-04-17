@@ -404,6 +404,21 @@ Verify the `validatorPath` in config matches your project structure:
 }
 ```
 
+## 🚩 CLI Flags
+
+| Flag | Effect |
+|------|--------|
+| `--allow-missing-types` | When an external schema references types absent from the main schema, strip the affected fields and warn instead of erroring. **Lossy** — use only when you know what you're dropping. |
+| `--continue-on-fetch-error` | If a remote external schema fetch fails (HTTP error, timeout, malformed response), log and continue instead of aborting. Produces partial output. |
+| `--debug` | Print full stack traces on error. Also enabled by `DEBUG=1`. |
+
+## ⚠️ Known Limitations
+
+- **Relies on `@prisma/internals`** — this is an **undocumented internal API** of Prisma. Breaking changes can ship in minor versions without notice. The version is pinned to an exact release in `package.json` for stability. If your project uses a different Prisma version, you may need to fork or wait for an update. The integration is isolated in [`src/utils/dmmf.ts`](src/utils/dmmf.ts) so a future swap touches one file.
+- **Generated code is syntax-validated but not type-checked** — every `.ts` file is parsed with `ts.transpileModule` before writing; a template bug producing invalid syntax fails the build loudly. Full semantic type-checking still happens in the consumer's `tsc` pass.
+- **External schema fetches have a 30s timeout + 2 retries with exponential backoff.** The default is fail-fast; use `--continue-on-fetch-error` to override.
+- **No end-to-end snapshot tests yet** — unit tests cover pure helpers, but integration coverage against real Prisma fixtures is still on the roadmap.
+
 ## 📄 License
 
 ISC License - see [LICENSE](LICENSE) for details.
