@@ -5,19 +5,23 @@ import { DocGenModel } from "./entities/model.js";
 import { DocFields } from "./field.type.js";
 import { Model } from "./types.js";
 
-import prismaPkg from "@prisma/internals";
 import { PrismaUtils } from "./utils/prisma-utils.js";
 import { DocGenGeneric } from "./entities/generic.js";
 import { DocGenFile } from "./file.js";
 import { DocGenField } from "./entities/field.js";
-import { config } from "./utils/loader.js";
+import { DocGenConfig, config } from "./utils/loader.js";
 import { Helper } from "./utils/helpers.js";
 import { Static } from "./static.js";
-
-const { getDMMF } = prismaPkg;
+import { getDMMFFromSchema, getDMMFSafe } from "./utils/dmmf.js";
 
 const ROOT = process.cwd();
 const PRISMA_DIR = path.join(ROOT, config.prismaPath);
+
+const CLI_FLAGS = {
+  allowMissingTypes: process.argv.includes("--allow-missing-types"),
+  continueOnFetchError: process.argv.includes("--continue-on-fetch-error"),
+  debug: process.env.DEBUG === "1" || process.argv.includes("--debug"),
+};
 
 export class DocGen {
   datamodel!: string;
@@ -31,10 +35,12 @@ export class DocGen {
 
   async init() {
     const prismaDataModel = await PrismaUtils.readPrismaFolderDatamodel(PRISMA_DIR);
-    const { datamodel } = await getDMMF({ datamodel: prismaDataModel });
+    const { datamodel } = await getDMMFFromSchema(prismaDataModel);
 
     // Busca e processa schemas externos (precisa do schema principal para resolver tipos)
-    const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas);
+    const externalSchemas = await PrismaUtils.fetchExternalSchemas(config.externalPrismaSchemas, {
+      continueOnError: CLI_FLAGS.continueOnFetchError,
+    });
     const mainModelNames = new Set(datamodel.models.map((m) => m.name));
     const mainEnumNames = new Set(datamodel.enums.map((e) => e.name));
 
@@ -42,46 +48,21 @@ export class DocGen {
       await this.processExternalSchema(external.name, external.prismaSchema, prismaDataModel, mainModelNames, mainEnumNames);
     }
 
-    const fieldSet = new Set<string>();
+    const fieldNames = new Set<string>();
 
     for (const model of datamodel.models) {
       for (const field of model.fields) {
-        fieldSet.add(`'${field.name}'`);
+        fieldNames.add(field.name);
       }
     }
 
-    this.fields = new DocFields(Array.from(fieldSet).toString());
+    this.fields = new DocFields([...fieldNames]);
 
     this.models = datamodel.models.map((model) => {
       return new DocGenModel(model as Model);
     });
 
     this.build();
-  }
-
-  /**
-   * Tenta getDMMF e, se falhar por tipos não encontrados, remove os campos
-   * que referenciam esses tipos e retenta.
-   */
-  async getDMMFSafe(schema: string): Promise<Awaited<ReturnType<typeof getDMMF>>> {
-    try {
-      return await getDMMF({ datamodel: schema });
-    } catch (err: any) {
-      const message = err?.message ?? "";
-      const missingTypes = [...message.matchAll(/Type "(\w+)" is neither a built-in type/g)].map((m: RegExpMatchArray) => m[1]);
-
-      if (missingTypes.length === 0) throw err;
-
-      const uniqueTypes = [...new Set(missingTypes)];
-      console.log(`⚠️  Removendo campos com tipos externos: ${uniqueTypes.join(", ")}`);
-
-      // Remove linhas que referenciam os tipos desconhecidos
-      const typePattern = uniqueTypes.join("|");
-      const re = new RegExp(`^\\s+\\w+\\s+(${typePattern})[\\s\\[\\]\\?].*$`, "gm");
-      const cleaned = schema.replaceAll(re, "");
-
-      return await getDMMF({ datamodel: cleaned });
-    }
   }
 
   async processExternalSchema(
@@ -104,7 +85,9 @@ export class DocGen {
 
     // Combina com o schema principal para que o Prisma resolva todos os tipos
     const combined = mainPrismaDataModel + "\n" + cleanedExternal;
-    const { datamodel } = await this.getDMMFSafe(combined);
+    const { datamodel } = await getDMMFSafe(combined, name, {
+      allowMissingTypes: CLI_FLAGS.allowMissingTypes,
+    });
 
     const servicePrefix = Helper.toKebab(name);
     const serviceIndexExports: string[] = [];
@@ -192,12 +175,21 @@ export class DocGen {
   }
 }
 
-const generator = new DocGen();
+async function run() {
+  // Revalida a config ao entrar na CLI — loader.ts carrega no import, mas
+  // chamar de novo garante que erros sejam tratados aqui, não no top-level.
+  await DocGenConfig.load();
 
-try {
+  const generator = new DocGen();
   await generator.init();
   console.log("✅ DTOs gerados com sucesso!");
-} catch (err) {
-  console.error("❌ Erro ao gerar DTOs:", err);
-  process.exit(1);
 }
+
+run().catch((err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`❌ Erro ao gerar DTOs: ${message}`);
+  if (CLI_FLAGS.debug && err instanceof Error && err.stack) {
+    console.error(err.stack);
+  }
+  process.exit(1);
+});

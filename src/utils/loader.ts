@@ -93,4 +93,20 @@ export class DocGenConfig {
   }
 }
 
-export const config = await DocGenConfig.load();
+/**
+ * Carregamento eager no top-level — vários módulos (`file.ts`, `field.ts`)
+ * lêem `config` no tempo de import. Trocar pra lazy exigiria injetar config
+ * em todo consumidor.
+ *
+ * Se falhar, imprimimos mensagem limpa e saímos com código 1 — caso contrário
+ * o erro surgiria como unhandled rejection feio no terminal.
+ */
+let _config: DocGenConfig;
+try {
+  _config = await DocGenConfig.load();
+} catch (err) {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`❌ Falha ao carregar config:\n${message}`);
+  process.exit(1);
+}
+export const config = _config;

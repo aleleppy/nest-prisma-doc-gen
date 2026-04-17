@@ -2,10 +2,10 @@ import { DocGenFile } from "./file.js";
 import { Static } from "./static.js";
 
 export class DocFields {
-  fields: string;
+  fields: string[];
   file: DocGenFile;
 
-  constructor(fields: string) {
+  constructor(fields: string[]) {
     this.fields = fields;
 
     this.file = new DocGenFile({
@@ -16,12 +16,11 @@ export class DocFields {
   }
 
   build() {
-    const content = `
+    const quoted = this.fields.map((name) => `'${name}'`).join(", ");
+    return `
       ${Static.AUTO_GENERATED_COMMENT}
-      export const FIELD_NAMES = [${this.fields}] as const
+      export const FIELD_NAMES = [${quoted}] as const
       export type FieldName = (typeof FIELD_NAMES)[number];
     `;
-
-    return content;
   }
 }
