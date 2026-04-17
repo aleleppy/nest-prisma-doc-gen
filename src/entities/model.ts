@@ -1,9 +1,9 @@
-import { FieldType } from "../config.type.js";
 import { DocGenFile } from "../file.js";
 import { Field, Model } from "../types.js";
 import { Helper } from "../utils/helpers.js";
 import { DocGenDto } from "./dto-generator.js";
 import { DocGenResponse } from "./response-generator.js";
+import { InputNamespaceBuilder, buildModelNamespace } from "./namespace-builder.js";
 
 export class DocGenModel {
   name: string;
@@ -29,57 +29,22 @@ export class DocGenModel {
 
     this.exports = [`export * from './types/${fileName}'`];
 
-    const teste = new Map<string, FieldType[]>();
-
-    const bla = [...this.dto.fields, ...this.response.fields];
-
-    bla.forEach((field) => {
-      let a = teste.get(field.name);
-
-      if (!a) {
-        a = [];
-        teste.set(field.name, a);
-      }
-
-      a.push(field.fieldType);
+    this.file = new DocGenFile({
+      dir: servicePrefix ? `/${servicePrefix}/types` : "/types",
+      fileName: `${fileName}.ts`,
+      data: this.assembleSource(),
     });
+  }
 
-    const fdm = `
-            export namespace Input {
-          ${Array.from(teste)
-            .map(([fieldName, fieldTypes]) => {
-              const name = Helper.capitalizeFirstSafe(fieldName);
-              const types = fieldTypes.map((type) => Helper.capitalizeFirstSafe(type));
-              return `
-              export namespace ${name} {
-                ${types
-                  .map((type) => {
-                    return `
-                    export type ${type} = ${name + type}
-                    export const ${type} = ${name + type}
-                  `;
-                  })
-                  .join(";")}
-              }
-            `;
-            })
-            .join(";")}
-        }
-    `;
+  /**
+   * Builds the final source string: DTO class + Response class + namespace block.
+   * Side effect: merges response.enums/hasJson into dto before emitting.
+   */
+  private assembleSource(): string {
+    const inputNamespace = new InputNamespaceBuilder([...this.dto.fields, ...this.response.fields]).build();
+    const modelNamespace = buildModelNamespace(this.name, inputNamespace);
 
-    const intaaa = `
-      export namespace ${this.name} {
-        export const Dto = ${this.name}Dto;
-        export type Dto = ${this.name}Dto;
-        export const Res = ${this.name}Res;
-        export type Res = ${this.name}Res;
-        export const Id = ${this.name}Id;
-        export type Id = ${this.name}Id;
-            ${fdm}
-      }
-    `;
-
-    // Build response primeiro para coletar enums, depois mergear no DTO
+    // Build response first to collect enums, then merge into DTO
     const responseResult = this.response.build();
     for (const e of this.response.enums) {
       this.dto.enums.add(e);
@@ -87,15 +52,7 @@ export class DocGenModel {
     if (this.response.hasJson) this.dto.hasJson = true;
     const dtoResult = this.dto.build();
 
-    const data = [dtoResult, responseResult, intaaa].join("");
-
-    const fileDir = servicePrefix ? `/${servicePrefix}/types` : "/types";
-
-    this.file = new DocGenFile({
-      dir: fileDir,
-      fileName: `${fileName}.ts`,
-      data,
-    });
+    return [dtoResult, responseResult, modelNamespace].join("");
   }
 
   save() {

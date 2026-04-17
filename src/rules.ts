@@ -14,8 +14,8 @@ export class DocGenRules {
 
   constructor(params: {
     ignore: string[];
-    examples: ApiExampleBuilder[];
-    validators: ValidatorBuilder[];
+    examples?: ApiExampleBuilder[];
+    validators?: ValidatorBuilder[];
     validatorPath: string;
     prismaPath: string;
     outputPath: string;
@@ -30,28 +30,24 @@ export class DocGenRules {
     this.ignore = ignore;
     this.validatorPath = validatorPath;
 
-    if (!validators.length) {
-      console.warn("[doc-gen] Nenhum validator encontrado. Verifique seu docgen.config.ts*");
-    }
-
     this.examples = new Map<string, ApiExampleBuilder>(
-      examples.flatMap((builder) => builder.fields.map((field) => [field, builder])),
+      (examples ?? []).flatMap((builder) => builder.fields.map((field) => [field, builder])),
     );
 
-    const aaaValidators = new Map<string, ValidatorRules>();
+    const validatorsByField = new Map<string, ValidatorRules>();
 
-    validators.forEach((validator) => {
+    (validators ?? []).forEach((validator) => {
       const { decorator, fields, inside } = validator;
 
       fields.forEach((field) => {
-        if (!aaaValidators.has(field)) {
-          aaaValidators.set(field, []);
+        if (!validatorsByField.has(field)) {
+          validatorsByField.set(field, []);
         }
 
-        aaaValidators.get(field)!.push({ decorator, inside });
+        validatorsByField.get(field)!.push({ decorator, inside });
       });
     });
 
-    this.validators = aaaValidators;
+    this.validators = validatorsByField;
   }
 }

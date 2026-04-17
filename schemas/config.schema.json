@@ -130,7 +130,7 @@
           "description": "Lista de validadores associados a campos específicos."
         }
       },
-      "required": ["ignore", "validatorPath", "prismaPath", "outputPath", "examples", "validators"]
+      "required": ["ignore", "validatorPath", "prismaPath", "outputPath"]
     }
   }
 }

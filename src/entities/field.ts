@@ -1,6 +1,7 @@
 import { FieldType, Inside } from "../config.type.js";
 import { Helper } from "../utils/helpers.js";
 import { config } from "../utils/loader.js";
+import { Static } from "../static.js";
 import { FieldDefault, Scalar, FieldKind, Field } from "../types.js";
 import { Validator } from "./validator.js";
 
@@ -14,7 +15,7 @@ export class DocGenField {
   scalarType: Scalar;
   kind: FieldKind;
 
-  type!: string;
+  type: string;
   fieldType: FieldType;
 
   isEnum: boolean = false;
@@ -38,8 +39,36 @@ export class DocGenField {
     this.isUpdatedAt = isUpdatedAt;
     this.fieldType = fieldType;
 
-    this.setType();
+    const resolved = DocGenField.resolveType(kind, type, fieldType);
+    this.type = resolved.type;
+    this.isEnum = resolved.isEnum;
+    this.isResponse = resolved.isResponse;
+    this.isJson = resolved.isJson;
+
     this.setValidators();
+  }
+
+  private static resolveType(
+    kind: FieldKind,
+    scalarType: Scalar,
+    fieldType: FieldType,
+  ): { type: string; isEnum: boolean; isResponse: boolean; isJson: boolean } {
+    if (kind === "enum") {
+      return { type: scalarType, isEnum: true, isResponse: false, isJson: false };
+    }
+    if (kind === "object") {
+      return { type: `${scalarType}Res`, isEnum: false, isResponse: true, isJson: false };
+    }
+    if (scalarType === "Json") {
+      const type = fieldType === "res" ? "Prisma.JsonValue" : "Prisma.InputJsonValue";
+      return { type, isEnum: false, isResponse: false, isJson: true };
+    }
+    return {
+      type: Helper.prismaScalarToTs(scalarType),
+      isEnum: false,
+      isResponse: false,
+      isJson: false,
+    };
   }
 
   private processValidator(params: { name: string; inside?: Inside }) {
@@ -106,31 +135,14 @@ export class DocGenField {
     }
   }
 
-  private setType() {
-    if (this.kind === "enum") {
-      this.isEnum = true;
-      this.type = this.scalarType;
-    } else if (this.kind === "object") {
-      this.isResponse = true;
-      this.type = `${this.scalarType}Res`;
-    } else if (this.kind === "scalar") {
-      if (this.scalarType === "Json") {
-        this.isJson = true;
-        this.type = this.fieldType === "res" ? "Prisma.JsonValue" : "Prisma.InputJsonValue";
-      } else {
-        this.type = Helper.prismaScalarToTs(this.scalarType);
-      }
-    }
-  }
-
   private getRuledExample(fieldName: string): string {
     const example = rules.examples.get(fieldName)?.example;
 
-    if (!example && example !== 0) {
-      return "example: 'aaaa'";
+    if (example === undefined) {
+      return `example: '${Static.DEFAULT_EXAMPLES.fallback}'`;
     }
 
-    const isNumber = Number.isInteger(example);
+    const isNumber = typeof example === "number";
 
     return isNumber ? `example: ${example}` : `example: '${example}'`;
   }
@@ -148,18 +160,18 @@ export class DocGenField {
     } else if (rules.examples.get(fieldName)) {
       props.push(this.getRuledExample(fieldName));
     } else if (helpers.isDate(this.scalarField)) {
-      props.push(`example: '2025-09-03T03:00:00.000Z'`);
+      props.push(`example: '${Static.DEFAULT_EXAMPLES.datetime}'`);
     } else if (this.scalarField.isId || Helper.splitByUpperCase(this.scalarField.name).includes("Id")) {
-      props.push(`example: 'cmfxu4njg000008l52v7t8qze'`);
+      props.push(`example: '${Static.DEFAULT_EXAMPLES.cuid}'`);
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);
     } else if (this.scalarField.kind === "enum") {
       const example = [`example: Object.values(${this.scalarField.type}) ${this.isArray ? "" : "[0]"}`];
       props.push(example.join());
     } else if (this.scalarField.type === "Int") {
-      props.push(`example: 777`);
+      props.push(`example: ${Static.DEFAULT_EXAMPLES.int}`);
     } else if (this.scalarField.type === "String") {
-      props.push(`example: 'ordinary string'`);
+      props.push(`example: '${Static.DEFAULT_EXAMPLES.string}'`);
     }
 
     if (this.isJson) {
