@@ -161,8 +161,6 @@ export class DocGenField {
       props.push(this.getRuledExample(fieldName));
     } else if (helpers.isDate(this.scalarField)) {
       props.push(`example: '${Static.DEFAULT_EXAMPLES.datetime}'`);
-    } else if (this.scalarField.isId || Helper.splitByUpperCase(this.scalarField.name).includes("Id")) {
-      props.push(`example: '${Static.DEFAULT_EXAMPLES.cuid}'`);
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);
     } else if (this.scalarField.kind === "enum") {
@@ -170,6 +168,11 @@ export class DocGenField {
       props.push(example.join());
     } else if (this.scalarField.type === "Int") {
       props.push(`example: ${Static.DEFAULT_EXAMPLES.int}`);
+    } else if (
+      this.scalarField.type === "String" &&
+      (this.scalarField.isId || Helper.splitByUpperCase(this.scalarField.name).includes("Id"))
+    ) {
+      props.push(`example: '${Static.DEFAULT_EXAMPLES.cuid}'`);
     } else if (this.scalarField.type === "String") {
       props.push(`example: '${Static.DEFAULT_EXAMPLES.string}'`);
     }
