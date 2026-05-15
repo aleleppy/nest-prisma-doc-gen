@@ -84,7 +84,19 @@ export class DocGenField {
 
   private setValidators() {
     if (this.scalarType === "DateTime") {
-      this.processValidator({ name: "IsDateString" });
+      const isoArgs = this.isArray
+        ? "{ strict: true, strictSeparator: true }, { each: true }"
+        : "{ strict: true, strictSeparator: true }";
+      this.validators.add(
+        new Validator({ name: "IsISO8601", inside: { type: "number", content: isoArgs } }),
+      );
+
+      const transformBody = this.isArray
+        ? "({ value }) => Array.isArray(value) ? value.map((v) => (v == null || v === '' ? v : new Date(v))) : value"
+        : "({ value }) => (value == null || value === '' ? value : new Date(value))";
+      this.validators.add(
+        new Validator({ name: "Transform", inside: { type: "number", content: transformBody } }),
+      );
     } else if (this.scalarType === "String") {
       this.processValidator({ name: "IsString" });
 
@@ -160,7 +172,7 @@ export class DocGenField {
     } else if (rules.examples.get(fieldName)) {
       props.push(this.getRuledExample(fieldName));
     } else if (helpers.isDate(this.scalarField)) {
-      props.push(`example: '${Static.DEFAULT_EXAMPLES.datetime}'`);
+      props.push(`format: 'date-time', example: '${Static.DEFAULT_EXAMPLES.datetime}'`);
     } else if (this.scalarField.type === "Boolean") {
       props.push(`example: true`);
     } else if (this.scalarField.kind === "enum") {

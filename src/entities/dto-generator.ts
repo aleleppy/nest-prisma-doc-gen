@@ -11,7 +11,6 @@ export class DocGenDto {
     `${Static.AUTO_GENERATED_COMMENT}`,
     "/* eslint-disable @typescript-eslint/no-namespace */",
     `import { ApiProperty, IntersectionType } from '@nestjs/swagger'`,
-    `import { Expose } from 'class-transformer'`,
   ]);
   classValidators = new Set<string>();
   enums = new Set<string>();
@@ -38,6 +37,7 @@ export class DocGenDto {
     const sanitizedFields = this.fields
       .map((field) => {
         for (const { name } of field.validators) {
+          if (name === "Transform") continue;
           this.classValidators.add(name);
         }
 
@@ -71,6 +71,12 @@ export class DocGenDto {
     } else if (this.hasJson) {
       this.imports.add(`import { Prisma } from '@prisma/client';`);
     }
+
+    const transformerImports = ["Expose"];
+    if (this.fields.some((f) => f.scalarType === "DateTime")) {
+      transformerImports.push("Transform");
+    }
+    this.imports.add(`import { ${transformerImports.join(", ")} } from 'class-transformer';`);
 
     this.imports.add(`import { ${Array.from(this.classValidators)} } from '${config.validatorPath}';`);
 
