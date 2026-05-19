@@ -84,12 +84,7 @@ export class DocGenField {
 
   private setValidators() {
     if (this.scalarType === "DateTime") {
-      const isoArgs = this.isArray
-        ? "{ strict: true, strictSeparator: true }, { each: true }"
-        : "{ strict: true, strictSeparator: true }";
-      this.validators.add(
-        new Validator({ name: "IsISO8601", inside: { type: "number", content: isoArgs } }),
-      );
+      this.processValidator({ name: "IsDate" });
 
       const transformBody = this.isArray
         ? "({ value }) => Array.isArray(value) ? value.map((v) => (v == null || v === '' ? v : new Date(v))) : value"
